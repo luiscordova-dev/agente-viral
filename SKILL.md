@@ -47,7 +47,22 @@ Si falta algo, PRIMERO muéstrale al usuario el mapa completo, para que sepa a d
 
 Y luego guíalo **una llave a la vez**. No le tires todos los pasos juntos: paso, checkpoint, siguiente paso. Si en algún momento `python3` no existe en su Mac, macOS le va a ofrecer instalar las herramientas — dile que acepte y espere; es una sola vez.
 
-**Regla de seguridad**: las llaves se pegan en el chat y TÚ las guardas por variable de entorno con `set-keys` (nunca como argumento del comando, nunca en un archivo del repo). No repitas la llave completa de vuelta en el chat.
+**Regla de seguridad**: las llaves NUNCA van en el chat. Van en el archivo `.env` (tú se lo abres, él pega, tú lo importas con `set-keys` y el script limpia el `.env` solo). Si el usuario de todos modos pega una llave en el chat, no lo regañes: guárdala al vuelo con `APIFY_TOKEN="<llave>" python3 {baseDir}/scripts/config.py set-keys` (variable de entorno, nunca argumento), no la repitas de vuelta, y sugiérele que la próxima vez use el `.env`.
+
+### El archivo .env — así entran las llaves (nunca por el chat)
+
+Prepara la puerta de entrada UNA vez y ábrela cuando toque pegar una llave:
+```bash
+cp -n {baseDir}/.env.example {baseDir}/.env; open -e {baseDir}/.env
+```
+(`open -e` lo abre en TextEdit. Si `open` no existe — Linux — dile que lo abra con su editor.)
+
+Cuando el usuario avise que ya pegó y guardó, importa y limpia en un solo paso:
+```bash
+python3 {baseDir}/scripts/config.py set-keys
+python3 {baseDir}/scripts/config.py check
+```
+`set-keys` lee el `.env`, guarda las llaves en `~/.agente-viral/` (fuera del repo, permisos solo-dueño) y **limpia el `.env` solo** — la llave no queda regada en ningún archivo del repo.
 
 ### 0a. Si falta la llave de Apify (obligatoria)
 
@@ -55,23 +70,16 @@ Dile, en este orden:
 1. *"Necesito tu llave de Apify. Apify es quien corre los robots de búsqueda. Tiene plan gratis con crédito mensual."*
 2. Entra a https://console.apify.com/ y crea tu cuenta.
 3. Ve a **Settings → API & Integrations** y copia tu **Personal API token**.
-4. Pégamela aquí.
+4. *"Te abrí un archivo que se llama .env. Pega tu llave entre las comillas de APIFY_TOKEN, guarda con Cmd+S, y me avisas."* (ábrelo con el comando de arriba)
 
-Cuando la tengas, guárdala por **variable de entorno** (nunca como argumento, para no exponerla):
-```bash
-APIFY_TOKEN="<token>" python3 {baseDir}/scripts/config.py set-keys
-python3 {baseDir}/scripts/config.py check
-```
-Si `check` da ✓: dile **"✅ Primera llave lista. Tu agente ya puede buscar."** Si da ✗: el mensaje del script dice qué revisar; acompáñalo hasta que pase.
+Cuando avise: corre `set-keys` + `check`. Si `check` da ✓: dile **"✅ Primera llave lista. Tu agente ya puede buscar."** Si da ✗: el mensaje del script dice qué revisar; acompáñalo hasta que pase.
 
 ### 0b. Si falta la llave de Supadata (recomendada)
 
 1. *"Ahora la llave de Supadata. Con ella leo lo que se DICE en cada video, y así separo el contenido de verdad de la música y el relleno. Tiene plan gratis. Si no la quieres, funciono igual pero filtro peor."*
 2. Regístrate en https://supadata.ai/ → Dashboard → **API Keys** → copia la llave.
-```bash
-SUPADATA_API_KEY="<key>" python3 {baseDir}/scripts/config.py set-keys
-python3 {baseDir}/scripts/config.py check
-```
+3. Mismo camino: ábrele el `.env`, que la pegue en `SUPADATA_API_KEY`, guarde y te avise. Corre `set-keys` + `check`.
+
 Si pasa: **"✅ Segunda llave lista. Tu agente ya puede leer los videos, no solo contarlos."**
 
 ### 0c. Si faltan las tablas de Notion

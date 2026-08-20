@@ -45,9 +45,28 @@ def load_config():
     return {}
 
 
+def load_env_file():
+    """Respaldo final: el .env de la raíz del repo (donde el usuario pega sus llaves)."""
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".env")
+    keys = {}
+    try:
+        for line in open(path, encoding="utf-8"):
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            k, _, v = line.partition("=")
+            k, v = k.strip(), v.strip().strip('"').strip("'")
+            if v:
+                keys[k] = v
+    except Exception:
+        pass
+    return keys
+
+
 CFG = load_config()
-APIFY_TOKEN = os.environ.get("APIFY_TOKEN") or CFG.get("apify_token")
-SUPADATA_KEY = os.environ.get("SUPADATA_API_KEY") or CFG.get("supadata_api_key")
+ENV_FILE = load_env_file()
+APIFY_TOKEN = os.environ.get("APIFY_TOKEN") or CFG.get("apify_token") or ENV_FILE.get("APIFY_TOKEN")
+SUPADATA_KEY = os.environ.get("SUPADATA_API_KEY") or CFG.get("supadata_api_key") or ENV_FILE.get("SUPADATA_API_KEY")
 
 UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36"
 NOW = dt.datetime.now(dt.timezone.utc)

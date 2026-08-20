@@ -21,7 +21,7 @@ Abre una sesión nueva de Claude Code y salúdalo:
 hola agente viral
 ```
 
-Él se presenta y te lleva de la mano. Te pide tus llaves una por una. Te dice exactamente dónde sacarlas. Revisa que funcionen. Y crea tus tablas de Notion solo. Eso se hace una sola vez — después, cada corrida es escribir una frase.
+Él se presenta y te lleva de la mano. Te dice exactamente dónde sacar cada llave. Te abre un archivo donde las pegas — nunca van en el chat. Revisa que funcionen. Y crea tus tablas de Notion solo. Eso se hace una sola vez — después, cada corrida es escribir una frase.
 
 > Si el comando te dice que la carpeta ya existe, bórrala con `rm -rf ~/.claude/skills/agente-viral` y repítelo.
 

@@ -21,6 +21,40 @@ DIR = os.path.expanduser("~/.agente-viral")
 PATH = os.path.join(DIR, "config.json")
 # Compatibilidad: si existe una config vieja de videos-virales, se lee como respaldo.
 LEGACY_PATH = os.path.expanduser("~/.videos-virales/config.json")
+# El .env en la raíz del repo: la puerta de entrada para pegar las llaves sin chat.
+ENV_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env")
+ENV_EXAMPLE_PATH = ENV_PATH + ".example"
+
+
+def read_env_file():
+    """Lee APIFY_TOKEN / SUPADATA_API_KEY del .env de la raíz del repo (si existe)."""
+    keys = {}
+    try:
+        for line in open(ENV_PATH, encoding="utf-8"):
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            k, _, v = line.partition("=")
+            k, v = k.strip(), v.strip().strip('"').strip("'")
+            if k in ("APIFY_TOKEN", "SUPADATA_API_KEY") and v:
+                keys[k] = v
+    except FileNotFoundError:
+        pass
+    except Exception:
+        print(f"⚠ No pude leer {ENV_PATH}. Revisa que sea texto plano.")
+    return keys
+
+
+def clean_env_file():
+    """Regresa el .env a su plantilla vacía (las llaves ya viven seguras en config)."""
+    try:
+        with open(ENV_EXAMPLE_PATH, encoding="utf-8") as f:
+            template = f.read()
+        with open(ENV_PATH, "w", encoding="utf-8") as f:
+            f.write(template)
+        return True
+    except Exception:
+        return False
 UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36"
 
 # El link del cierre (a dónde invita el agente al terminar). Se cambia con set-cta.
@@ -79,8 +113,10 @@ def cmd_show():
 
 def cmd_set_keys():
     cfg = load()
-    apify = os.environ.get("APIFY_TOKEN")
-    supa = os.environ.get("SUPADATA_API_KEY")
+    env_file = read_env_file()
+    # prioridad: variable de entorno > archivo .env
+    apify = os.environ.get("APIFY_TOKEN") or env_file.get("APIFY_TOKEN")
+    supa = os.environ.get("SUPADATA_API_KEY") or env_file.get("SUPADATA_API_KEY")
     if apify:
         cfg["apify_token"] = apify.strip()
     if supa:
@@ -88,9 +124,14 @@ def cmd_set_keys():
     save(cfg)
     print("✓ llaves guardadas en", PATH)
     if not apify:
-        print("  (no se pasó APIFY_TOKEN)")
+        print("  (falta APIFY_TOKEN — pégala en el archivo .env y vuelve a correr set-keys)")
     if not supa:
-        print("  (no se pasó SUPADATA_API_KEY)")
+        print("  (falta SUPADATA_API_KEY — opcional)")
+    if env_file and (apify or supa):
+        if clean_env_file():
+            print("✓ limpié el archivo .env — tus llaves ya viven seguras en", DIR)
+        else:
+            print("⚠ No pude limpiar el .env — borra tú las llaves de ese archivo.")
 
 
 def cmd_set_notion(a):
