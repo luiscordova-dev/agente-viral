@@ -31,7 +31,7 @@ hola agente viral
 |---|---|---|
 | [Apify](https://console.apify.com/) | Corre los robots de búsqueda | Gratis (crédito mensual incluido) |
 | [Supadata](https://supadata.ai/) | Lee lo que se dice en los videos | Gratis |
-| [Notion](https://www.notion.so/) | Ahí viven tus tablas | Gratis |
+| [Notion](https://www.notion.so/) | Ahí viven tus tablas (se activa como conector en Claude Code, sin llave) | Gratis |
 
 El agente te guía para sacar cada llave cuando lo saludes. Cada corrida gasta menos de $0.50 USD de tu crédito de Apify.
 
@@ -45,7 +45,7 @@ busca videos virales de finanzas personales
 
 **Él te regresa** (además de las 3 tablas llenas en tu Notion):
 
-> Encontré 214 videos, tiré 176 de basura, quedaron 14 de calidad.
+> Encontré 214 videos y tiré 69 de basura. De los 145 que quedaron, revisé a fondo los mejores y 14 pasaron el filtro de contenido.
 >
 > **Top 3:**
 > 1. 🇲🇽 "El error que te tiene pobre" — 2.1M views, pegó por el hook de miedo + número concreto
@@ -95,6 +95,7 @@ Abre Claude Code y dile: *"lee el SKILL.md de agente-viral y ayúdame a adaptarl
 - **No publica contenido.** Te da las ideas; grabar y publicar sigue siendo tuyo.
 - **Depende de servicios externos.** Si TikTok cambia sus reglas o Apify falla, esa corrida sale coja. El agente te avisa en español, sin drama.
 - **Los hashtags chicos dan resultados chicos.** Si tu nicho es muy de nicho, el agente te propondrá hashtags más grandes del mismo tema.
+- **De YouTube también llegan videos largos.** Los cortos salen de TikTok e Instagram; los formatos largos que funcionan también son oro para sacar ideas.
 - **No es asesoría.** El score de viralidad es matemática sobre datos públicos, no una garantía de que tu video pegue.
 
 ## El siguiente

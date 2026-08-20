@@ -45,28 +45,11 @@ def load_config():
     return {}
 
 
-def load_env_file():
-    """Respaldo final: el .env de la raíz del repo (donde el usuario pega sus llaves)."""
-    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", ".env")
-    keys = {}
-    try:
-        for line in open(path, encoding="utf-8"):
-            line = line.strip()
-            if not line or line.startswith("#") or "=" not in line:
-                continue
-            k, _, v = line.partition("=")
-            k, v = k.strip(), v.strip().strip('"').strip("'")
-            if v:
-                keys[k] = v
-    except Exception:
-        pass
-    return keys
-
-
 CFG = load_config()
-ENV_FILE = load_env_file()
-APIFY_TOKEN = os.environ.get("APIFY_TOKEN") or CFG.get("apify_token") or ENV_FILE.get("APIFY_TOKEN")
-SUPADATA_KEY = os.environ.get("SUPADATA_API_KEY") or CFG.get("supadata_api_key") or ENV_FILE.get("SUPADATA_API_KEY")
+# El .env del repo NO es fuente de llaves en runtime: es solo la puerta de entrada
+# que config.py set-keys importa y limpia. Fuente única: env var > config > legacy.
+APIFY_TOKEN = os.environ.get("APIFY_TOKEN") or CFG.get("apify_token")
+SUPADATA_KEY = os.environ.get("SUPADATA_API_KEY") or CFG.get("supadata_api_key")
 
 UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36"
 NOW = dt.datetime.now(dt.timezone.utc)
@@ -96,10 +79,12 @@ def actor_input(plat, niche, hashtag, per_platform):
 
 # ---------------- apify ----------------
 def api(method, path, body=None, timeout=120):
-    url = f"https://api.apify.com/v2/{path}{'&' if '?' in path else '?'}token={APIFY_TOKEN}"
+    # el token va por header, nunca en la URL (no aparece en logs ni errores)
+    url = f"https://api.apify.com/v2/{path}"
     data = json.dumps(body).encode() if body else None
     req = urllib.request.Request(url, data=data, method=method,
-                                 headers={"Content-Type": "application/json"})
+                                 headers={"Content-Type": "application/json",
+                                          "Authorization": f"Bearer {APIFY_TOKEN}"})
     with urllib.request.urlopen(req, timeout=timeout) as r:
         return json.load(r)
 
@@ -324,11 +309,12 @@ def run():
     done = wait_all(runs)
 
     print("2) descargando y ordenando resultados…")
-    rows, malformed = [], 0
+    rows, malformed, plats_ok = [], 0, 0
     for plat, (rid, st) in done.items():
         if st != "SUCCEEDED":
             print(f"  ⚠ {plat}: la búsqueda terminó en {st}. Se salta esta plataforma.")
             continue
+        plats_ok += 1
         try:
             items = dataset(rid)
         except Exception:
@@ -344,6 +330,10 @@ def run():
         print(f"  • {malformed} resultados venían incompletos y se descartaron.")
     print(f"   total encontrado: {len(rows)}")
     if not rows:
+        if plats_ok == 0:
+            raise FatalError("❌ Las búsquedas fallaron — no es culpa de tu hashtag.\n"
+                             "   Los robots no terminaron bien esta vez (falla pasajera del servicio).\n"
+                             "   Espera un par de minutos y vuelve a correr el mismo comando.")
         raise FatalError(f"❌ No se encontró ningún video.\n"
                          f"   Lo más probable: el hashtag #{hashtag} casi no se usa.\n"
                          f"   Prueba con un hashtag más popular del mismo tema:\n"
@@ -439,11 +429,19 @@ def main():
         raise
     except KeyboardInterrupt:
         sys.exit("\n⏹ Corrida cancelada.")
-    except Exception as e:
+    except Exception:
+        import traceback
+        detail = "(no se pudo guardar el detalle)"
+        try:
+            os.makedirs("data", exist_ok=True)
+            with open("data/error.txt", "w", encoding="utf-8") as f:
+                f.write(traceback.format_exc())
+            detail = "El detalle quedó en scripts/data/error.txt"
+        except Exception:
+            pass
         sys.exit("❌ Algo salió mal que no esperábamos.\n"
-                 f"   Detalle técnico (por si Claude lo necesita): {type(e).__name__}: {e}\n"
-                 "   Vuelve a correr el comando. Si sigue fallando, pídele a Claude:\n"
-                 "   \"corre el pipeline de nuevo y dime por qué falla\"")
+                 f"   {detail} — pídele a tu agente que lo lea y lo arregle.\n"
+                 "   Luego vuelve a correr el comando.")
 
 
 if __name__ == "__main__":

@@ -8,6 +8,8 @@ __pycache__/
 config.json
 .env
 .env.*
+# la plantilla SÍ se versiona (no trae llaves)
+!.env.example
 
 # macOS
 .DS_Store
