@@ -5,21 +5,11 @@ Un agente de IA que trabaja en tu computadora. Le dices un nicho — cocina, fin
 1. **Busca** los videos virales de ese nicho en TikTok, YouTube e Instagram.
 2. **Tira la basura**: memes, anuncios, clips de pura música.
 3. **Lee lo que se dice** en cada video para quedarse con contenido de verdad.
-4. **Te deja 3 tablas en tu Notion**: los virales con sus números, ideas adaptadas a TU canal, y el análisis de qué está funcionando.
+4. **Te deja 3 tablas en tu Notion**: los virales con sus números, ideas adaptadas a tu canal (o al de tu cliente), y el análisis de qué está funcionando.
 
-Tú solo escribes: *"busca videos virales de cocina"*. Él hace el resto.
+Necesitas Claude Code ya instalado — el Roadmap que te trajo aquí lo deja listo. ¿Llegaste directo a este repo? Instala Claude Code primero: [claude.com/claude-code](https://claude.com/claude-code).
 
-## Lo que necesitas (son 3 cosas)
-
-| Cuenta | Para qué | Costo |
-|---|---|---|
-| [Apify](https://console.apify.com/) | Corre los robots de búsqueda | Gratis (crédito mensual incluido) |
-| [Supadata](https://supadata.ai/) | Lee lo que se dice en los videos | Gratis |
-| Notion | Ahí viven tus tablas | Gratis |
-
-Cada corrida gasta menos de $0.50 USD de tu crédito de Apify. Este repo asume que ya tienes Claude Code instalado — si no, primero termina el Roadmap.
-
-## Instálalo (2 comandos)
+## Instálalo (1 comando y un saludo)
 
 ```bash
 git clone https://github.com/luiscordova-dev/agente-viral ~/.claude/skills/agente-viral
@@ -31,7 +21,19 @@ Abre una sesión nueva de Claude Code y salúdalo:
 hola agente viral
 ```
 
-Él se presenta y te lleva de la mano: te pide tus llaves una por una, te dice exactamente dónde sacarlas, revisa que funcionen, y crea tus tablas de Notion solo. Eso se hace una sola vez. Después, cada corrida es escribir una frase.
+Él se presenta y te lleva de la mano. Te pide tus llaves una por una. Te dice exactamente dónde sacarlas. Revisa que funcionen. Y crea tus tablas de Notion solo. Eso se hace una sola vez — después, cada corrida es escribir una frase.
+
+> Si el comando te dice que la carpeta ya existe, bórrala con `rm -rf ~/.claude/skills/agente-viral` y repítelo.
+
+## Lo que necesitas (son 3 cuentas, las 3 gratis)
+
+| Cuenta | Para qué | Costo |
+|---|---|---|
+| [Apify](https://console.apify.com/) | Corre los robots de búsqueda | Gratis (crédito mensual incluido) |
+| [Supadata](https://supadata.ai/) | Lee lo que se dice en los videos | Gratis |
+| [Notion](https://www.notion.so/) | Ahí viven tus tablas | Gratis |
+
+El agente te guía para sacar cada llave cuando lo saludes. Cada corrida gasta menos de $0.50 USD de tu crédito de Apify.
 
 ## Cómo se ve una corrida
 
@@ -50,7 +52,9 @@ busca videos virales de finanzas personales
 > 2. 🇪🇸 "Ahorré $100k en 12 meses así" — 890k views, storytelling con prueba
 > 3. 🇺🇸 "Stop doing this with your paycheck" — 1.4M views, lista de 3 errores
 >
-> 📊 Lista de Videos · 💡 Ideas para tu canal · 🧠 Análisis de patrones
+> 📊 Lista de Videos · 💡 Ideas para el canal · 🧠 Análisis de patrones
+
+*(Los números de arriba son una muestra de cómo se ve el reporte — los tuyos saldrán de tu nicho.)*
 
 ## Qué acabas de armar (así se piensa un agente)
 
@@ -63,7 +67,7 @@ Este repo es un agente completo, y puedes señalar cada parte:
 | Parte del agente | Dónde vive aquí |
 |---|---|
 | **El objetivo** | "Encuentra los virales de este nicho y conviértelos en ideas para mí" |
-| **Sus herramientas** | Los robots de búsqueda (Apify), el lector de transcripts (Supadata), tu Notion |
+| **Sus herramientas** | Los robots de búsqueda (Apify), el lector de lo que se dice en cada video (Supadata), tu Notion |
 | **El bucle** | Busca → ve qué encontró → filtra → lee → clasifica → decide qué merece tu Notion y qué no |
 | **Sus instrucciones** | [SKILL.md](SKILL.md) — léelo: es el "manual de empleado" del agente, en español |
 | **Los frenos** | Confirma el hashtag contigo ANTES de gastar, valida las llaves antes de correr, y te dice el costo de cada corrida |
@@ -75,7 +79,7 @@ Fíjate en la diferencia: el archivo [pipeline.py](scripts/pipeline.py) es la pa
 El patrón que acabas de armar — *buscar afuera → filtrar → analizar → escribir en Notion* — sirve para mucho más que videos:
 
 - **Espiar a tu competencia**: mismas plataformas, pero el nicho es el nombre de tus 5 competidores.
-- **Detectar tendencias de producto**: busca lo viral de "gadgets de cocina" cada semana y compara los análisis.
+- **Detectar tendencias de producto**: vuelve a correrlo sobre "gadgets de cocina" y compara los análisis de una corrida a otra.
 - **Encontrar creadores para colaborar**: la tabla Lista ya trae autor y engagement — ordénala por Engagement Rate.
 
 ¿Y para cambiarle el cerebro? Solo se tocan 2 archivos:
@@ -87,7 +91,7 @@ Abre Claude Code y dile: *"lee el SKILL.md de agente-viral y ayúdame a adaptarl
 
 ## Lo honesto (qué NO hace)
 
-- **Vive en tu computadora y corre cuando tú se lo pides.** No es un empleado de tiempo completo: es tu primer agente.
+- **Vive en tu computadora y corre cuando tú se lo pides.** Es tu primer agente.
 - **No publica contenido.** Te da las ideas; grabar y publicar sigue siendo tuyo.
 - **Depende de servicios externos.** Si TikTok cambia sus reglas o Apify falla, esa corrida sale coja. El agente te avisa en español, sin drama.
 - **Los hashtags chicos dan resultados chicos.** Si tu nicho es muy de nicho, el agente te propondrá hashtags más grandes del mismo tema.
@@ -97,7 +101,7 @@ Abre Claude Code y dile: *"lee el SKILL.md de agente-viral y ayúdame a adaptarl
 
 Armaste tu primer agente y ya está trabajando para ti.
 
-El de verdad — uno que atiende tu WhatsApp y tus redes, responde dudas, capta clientes y cobra, para tu negocio o para vendérselo a tus clientes — lo construimos juntos en el workshop en vivo.
+El de verdad atiende tu WhatsApp y tus redes. Responde dudas, capta clientes y cobra. Para tu negocio, o para vendérselo a tus clientes. Ese lo construimos juntos en el workshop en vivo.
 
 **Si te gustó armar este, ven a armar el de verdad → [Próximos workshops](CAMBIA_ESTE_LINK)**
 

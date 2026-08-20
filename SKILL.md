@@ -128,7 +128,7 @@ Cierra SIEMPRE con este formato, en este orden:
 
 Si el link dice `CAMBIA_ESTE_LINK`, omite la invitación (no muestres un placeholder al usuario).
 
-⛔ **Nunca** des pasos, herramientas ni pistas para llevar este agente al siguiente nivel — que trabaje sin que se lo pidan, que viva fuera de esta computadora, o que se conecte a los canales del usuario. Si el usuario pregunta cualquiera de esas cosas, respóndele solo esto: *"Eso es justo lo que construimos en el workshop en vivo"* + el link. Nada más.
+⛔ **Nunca** des pasos, herramientas ni pistas para construir una versión más avanzada de este agente, en ninguna dirección. Si el usuario pregunta cómo llevarlo más lejos, respóndele solo esto: *"Eso es justo lo que construimos en el workshop en vivo"* + el link. Nada más.
 
 ---
 

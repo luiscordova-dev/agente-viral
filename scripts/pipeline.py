@@ -30,31 +30,24 @@ LEGACY_CONFIG_PATH = os.path.expanduser("~/.videos-virales/config.json")
 
 
 def load_config():
+    # mismo criterio que config.py: el archivo nuevo manda; si está vacío o no
+    # existe, se cae al respaldo viejo.
     for path in (CONFIG_PATH, LEGACY_CONFIG_PATH):
-        try:
-            return json.load(open(path))
-        except Exception:
+        if not os.path.exists(path):
             continue
+        try:
+            cfg = json.load(open(path, encoding="utf-8"))
+        except Exception:
+            print(f"⚠ El archivo {path} está dañado. Vuelve a guardar tus llaves con: config.py set-keys")
+            continue
+        if cfg:
+            return cfg
     return {}
 
 
 CFG = load_config()
-
-
-def get_apify_token():
-    return os.environ.get("APIFY_TOKEN") or CFG.get("apify_token")
-
-
-def get_supadata_key():
-    return os.environ.get("SUPADATA_API_KEY") or CFG.get("supadata_api_key")
-
-
-APIFY_TOKEN = get_apify_token()
-SUPADATA_KEY = get_supadata_key()
-if not APIFY_TOKEN:
-    sys.exit("❌ Falta la llave de Apify.\n"
-             "   Consíguela en https://console.apify.com/ → Settings → API & Integrations\n"
-             "   y guárdala con:  APIFY_TOKEN=\"<tu-llave>\" python3 config.py set-keys")
+APIFY_TOKEN = os.environ.get("APIFY_TOKEN") or CFG.get("apify_token")
+SUPADATA_KEY = os.environ.get("SUPADATA_API_KEY") or CFG.get("supadata_api_key")
 
 UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36"
 NOW = dt.datetime.now(dt.timezone.utc)
@@ -64,6 +57,10 @@ ACTORS = {
     "youtube":   "streamers~youtube-scraper",
     "instagram": "apify~instagram-hashtag-scraper",
 }
+
+
+class FatalError(Exception):
+    """Error que detiene la corrida con un mensaje en español."""
 
 
 def actor_input(plat, niche, hashtag, per_platform):
@@ -79,13 +76,21 @@ def actor_input(plat, niche, hashtag, per_platform):
 
 
 # ---------------- apify ----------------
-def api(method, path, body=None):
+def api(method, path, body=None, timeout=120):
     url = f"https://api.apify.com/v2/{path}{'&' if '?' in path else '?'}token={APIFY_TOKEN}"
     data = json.dumps(body).encode() if body else None
     req = urllib.request.Request(url, data=data, method=method,
                                  headers={"Content-Type": "application/json"})
-    with urllib.request.urlopen(req, timeout=120) as r:
+    with urllib.request.urlopen(req, timeout=timeout) as r:
         return json.load(r)
+
+
+def abort_run(rid):
+    """Aborta una corrida de Apify para no gastar crédito de más. Mejor esfuerzo."""
+    try:
+        api("POST", f"actor-runs/{rid}/abort", timeout=30)
+    except Exception:
+        pass
 
 
 def launch(plat, niche, hashtag, per_platform):
@@ -94,15 +99,15 @@ def launch(plat, niche, hashtag, per_platform):
         rid = api("POST", f"acts/{actor}/runs", actor_input(plat, niche, hashtag, per_platform))["data"]["id"]
     except urllib.error.HTTPError as e:
         if e.code in (401, 403):
-            sys.exit("❌ Apify rechazó la llave. Revisa que la copiaste completa y vuelve a guardarla:\n"
-                     "   APIFY_TOKEN=\"<tu-llave>\" python3 config.py set-keys")
+            raise FatalError("❌ Apify rechazó la llave. Revisa que la copiaste completa y vuelve a guardarla:\n"
+                             "   APIFY_TOKEN=\"<tu-llave>\" python3 config.py set-keys")
         if e.code == 402:
-            sys.exit("❌ Se acabó el crédito de Apify este mes.\n"
-                     "   Entra a https://console.apify.com/billing para revisarlo. El plan gratis se renueva cada mes.")
+            raise FatalError("❌ Se acabó el crédito de Apify este mes.\n"
+                             "   Entra a https://console.apify.com/billing para revisarlo. El plan gratis se renueva cada mes.")
         print(f"  ⚠ {plat}: Apify contestó con error {e.code}. Se salta esta plataforma.")
         return None
     except urllib.error.URLError:
-        sys.exit("❌ No hay conexión con Apify. Revisa tu internet y vuelve a correr el comando.")
+        raise FatalError("❌ No hay conexión con Apify. Revisa tu internet y vuelve a correr el comando.")
     print(f"  ▶ {plat}: corrida {rid}")
     return rid
 
@@ -113,17 +118,23 @@ def wait_all(runs, timeout=600):
     while runs and time.time() < deadline:
         for plat, rid in list(runs.items()):
             try:
-                st = api("GET", f"actor-runs/{rid}")["data"]["status"]
-            except Exception:
+                st = api("GET", f"actor-runs/{rid}", timeout=30)["data"]["status"]
+            except urllib.error.HTTPError as e:
+                if e.code in (401, 403, 404):  # error permanente: no tiene caso seguir esperando
+                    print(f"  ⚠ {plat}: Apify contestó error {e.code} al consultar la corrida. Se salta esta plataforma.")
+                    runs.pop(plat)
                 continue  # error pasajero de red: se reintenta en el siguiente ciclo
+            except Exception:
+                continue
             if st in ("SUCCEEDED", "FAILED", "ABORTED", "TIMED-OUT"):
                 done[plat] = (rid, st)
                 runs.pop(plat)
                 print(f"  ✓ {plat}: {st}")
         if runs:
             time.sleep(6)
-    for plat, rid in runs.items():  # lo que no terminó a tiempo
-        print(f"  ⚠ {plat}: no terminó en {timeout // 60} minutos. Se salta esta plataforma.")
+    for plat, rid in runs.items():  # lo que no terminó a tiempo se aborta para no gastar
+        print(f"  ⚠ {plat}: no terminó en {timeout // 60} minutos. Se cancela y se salta esta plataforma.")
+        abort_run(rid)
     return done
 
 
@@ -152,11 +163,18 @@ def parse_hms(s):
     return p[0] * 3600 + p[1] * 60 + p[2]
 
 
+def _tag(h):
+    """Saca el nombre de un hashtag venga como venga (dict, string, null)."""
+    if isinstance(h, dict):
+        return (h.get("name") or "").lower()
+    return str(h or "").lower().lstrip("#")
+
+
 def norm(plat, it):
     if plat == "tiktok":
         return dict(platform="tiktok", id=str(it.get("id")), url=it.get("webVideoUrl"),
             author=(it.get("authorMeta") or {}).get("name"), caption=it.get("text") or "",
-            hashtags=[h.get("name", "").lower() for h in (it.get("hashtags") or [])],
+            hashtags=[_tag(h) for h in (it.get("hashtags") or []) if _tag(h)],
             views=it.get("playCount") or 0, likes=it.get("diggCount") or 0,
             comments=it.get("commentCount") or 0, shares=it.get("shareCount") or 0,
             saves=it.get("collectCount") or 0, duration=(it.get("videoMeta") or {}).get("duration"),
@@ -167,7 +185,7 @@ def norm(plat, it):
         return dict(platform="youtube", id=str(it.get("id")), url=it.get("url"),
             author=it.get("channelName"),
             caption=(it.get("title") or "") + " — " + (it.get("text") or "")[:300],
-            hashtags=[h.lower().lstrip("#") for h in (it.get("hashtags") or [])],
+            hashtags=[_tag(h) for h in (it.get("hashtags") or []) if _tag(h)],
             views=it.get("viewCount") or 0, likes=it.get("likes") or 0,
             comments=it.get("commentsCount") or 0, shares=0, saves=0,
             duration=parse_hms(it.get("duration")), created=it.get("date"), lang=None,
@@ -175,7 +193,7 @@ def norm(plat, it):
     if plat == "instagram":
         return dict(platform="instagram", id=str(it.get("id")), url=it.get("url"),
             author=it.get("ownerUsername"), caption=it.get("caption") or "",
-            hashtags=[h.lower() for h in (it.get("hashtags") or [])],
+            hashtags=[_tag(h) for h in (it.get("hashtags") or []) if _tag(h)],
             views=it.get("videoPlayCount") or it.get("igPlayCount") or 0,
             likes=it.get("likesCount") or 0, comments=it.get("commentsCount") or 0,
             shares=0, saves=0, duration=it.get("videoDuration"),
@@ -215,6 +233,8 @@ def zscores(vals):
 def fetch_transcript(url):
     if not SUPADATA_KEY:
         return "__ERR__no_key"
+    if not url:
+        return "__ERR__no_url"
     q = urllib.parse.urlencode({"url": url, "text": "true"})
     req = urllib.request.Request(f"https://api.supadata.ai/v1/transcript?{q}",
                                  headers={"x-api-key": SUPADATA_KEY, "User-Agent": UA})
@@ -247,9 +267,15 @@ def run():
     ap.add_argument("--top", type=int, default=6, help="candidatos/plataforma al gate de transcript")
     ap.add_argument("--outdir", default="data")
     args = ap.parse_args()
+
+    if not APIFY_TOKEN:
+        raise FatalError("❌ Falta la llave de Apify.\n"
+                         "   Consíguela en https://console.apify.com/ → Settings → API & Integrations\n"
+                         "   y guárdala con:  APIFY_TOKEN=\"<tu-llave>\" python3 config.py set-keys")
+
     plats = [p.strip() for p in args.platforms.split(",") if p.strip() in ACTORS]
     if not plats:
-        sys.exit("❌ Ninguna plataforma válida. Usa: --platforms tiktok,youtube,instagram")
+        raise FatalError("❌ Ninguna plataforma válida. Usa: --platforms tiktok,youtube,instagram")
     hashtag = (args.hashtag or args.niche).replace(" ", "").replace("#", "").lower()
     OUT = args.outdir
     os.makedirs(OUT, exist_ok=True)
@@ -260,20 +286,25 @@ def run():
         print(f"  TikTok e Instagram van a buscar #{hashtag} — si ese hashtag no existe, saldrá vacío.")
         print(f"  Mejor: python3 pipeline.py \"{args.niche}\" --hashtag <un-hashtag-que-la-gente-sí-use>")
     if not SUPADATA_KEY:
-        print("⚠ Sin llave de Supadata: el agente no puede leer transcripts y filtrará con más ruido.")
+        print("⚠ Sin llave de Supadata: el agente no puede leer lo que se dice en los videos y filtrará con más ruido.")
 
     print("1) lanzando los robots de búsqueda…")
     runs = {}
-    for p in plats:
-        rid = launch(p, args.niche, hashtag, args.per_platform)
-        if rid:
-            runs[p] = rid
+    try:
+        for p in plats:
+            rid = launch(p, args.niche, hashtag, args.per_platform)
+            if rid:
+                runs[p] = rid
+    except FatalError:
+        for rid in runs.values():  # no dejar corridas vivas gastando crédito
+            abort_run(rid)
+        raise
     if not runs:
-        sys.exit("❌ Ninguna plataforma arrancó. Revisa los mensajes de arriba.")
+        raise FatalError("❌ Ninguna plataforma arrancó. Revisa los mensajes de arriba.")
     done = wait_all(runs)
 
     print("2) descargando y ordenando resultados…")
-    rows = []
+    rows, malformed = [], 0
     for plat, (rid, st) in done.items():
         if st != "SUCCEEDED":
             print(f"  ⚠ {plat}: la búsqueda terminó en {st}. Se salta esta plataforma.")
@@ -283,14 +314,20 @@ def run():
         except Exception:
             print(f"  ⚠ {plat}: no se pudieron descargar los resultados. Se salta esta plataforma.")
             continue
-        json.dump(items, open(f"{OUT}/{plat}_raw.json", "w"), ensure_ascii=False)
-        rows += [norm(plat, it) for it in items]
+        json.dump(items, open(f"{OUT}/{plat}_raw.json", "w", encoding="utf-8"), ensure_ascii=False)
+        for it in items:
+            try:
+                rows.append(norm(plat, it))
+            except Exception:
+                malformed += 1  # un item raro no tira la corrida completa
+    if malformed:
+        print(f"  • {malformed} resultados venían incompletos y se descartaron.")
     print(f"   total encontrado: {len(rows)}")
     if not rows:
-        sys.exit(f"❌ No se encontró ningún video.\n"
-                 f"   Lo más probable: el hashtag #{hashtag} casi no se usa.\n"
-                 f"   Prueba con un hashtag más popular del mismo tema:\n"
-                 f"   python3 pipeline.py \"{args.niche}\" --hashtag <otro-hashtag>")
+        raise FatalError(f"❌ No se encontró ningún video.\n"
+                         f"   Lo más probable: el hashtag #{hashtag} casi no se usa.\n"
+                         f"   Prueba con un hashtag más popular del mismo tema:\n"
+                         f"   python3 pipeline.py \"{args.niche}\" --hashtag <otro-hashtag>")
 
     print("3) tirando la basura y puntuando viralidad…")
     for r in rows:
@@ -315,47 +352,57 @@ def run():
     passed = [r for r in rows if r["passed_prefilter"]]
     print(f"   pasaron el filtro: {len(passed)} / {len(rows)}")
     if not passed:
-        sys.exit(f"❌ Se encontraron {len(rows)} videos pero ninguno pasó el filtro de calidad\n"
-                 f"   (todos eran fotos, anuncios, muy cortos o con muy pocas vistas).\n"
-                 f"   Prueba con un hashtag más grande del mismo tema.")
+        raise FatalError(f"❌ Se encontraron {len(rows)} videos pero ninguno pasó el filtro de calidad\n"
+                         f"   (todos eran fotos, anuncios, muy cortos o con muy pocas vistas).\n"
+                         f"   Prueba con un hashtag más grande del mismo tema.")
 
-    print("4) leyendo transcripts para quedarnos con contenido de verdad…")
+    print("4) leyendo lo que se dice en cada video para quedarnos con contenido de verdad…")
     try:
-        CACHE = json.load(open(f"{OUT}/transcripts.json"))
+        CACHE = json.load(open(f"{OUT}/transcripts.json", encoding="utf-8"))
     except Exception:
         CACHE = {}
     best = []
+    api_fails, gate_total = 0, 0
     for plat in plats:
         cands = sorted([r for r in passed if r["platform"] == plat],
                        key=lambda r: r.get("vir_score", 0), reverse=True)[:args.top]
         for r in cands:
-            if SUPADATA_KEY:
-                t = CACHE.get(r["url"]) or fetch_transcript(r["url"])
+            gate_total += 1
+            if r["url"] in CACHE:
+                t = CACHE[r["url"]]
+            else:
+                t = fetch_transcript(r["url"])
                 if not t.startswith("__ERR__"):
                     CACHE[r["url"]] = t
-            else:
-                t = "__ERR__no_key"
-            words = re.findall(r"\w+", t.lower()) if not t.startswith("__ERR__") else []
+            err = t.startswith("__ERR__")
+            words = re.findall(r"\w+", t.lower()) if not err else []
             n = len(words)
             wpm = (n / (r["duration"] / 60)) if r.get("duration") else None
-            r["transcript"] = t[:4000] if not t.startswith("__ERR__") else ""
+            r["transcript"] = t[:4000] if not err else ""
             r["transcript_words"] = n
             r["wpm"] = round(wpm, 1) if wpm else None
-            # sin llave de Supadata, dejamos pasar por score (Claude clasifica y limpia después)
-            r["quality_pass"] = True if not SUPADATA_KEY else (n >= MIN_WORDS and (wpm is None or wpm >= MIN_WPM))
+            if err and SUPADATA_KEY and t not in ("__ERR__no_key",):
+                api_fails += 1
+            # si Supadata falló (o no hay llave), el video pasa por score y
+            # Claude lo clasifica/limpia después — un fallo de API no descarta
+            # un video bueno.
+            r["quality_pass"] = True if err else (n >= MIN_WORDS and (wpm is None or wpm >= MIN_WPM))
             if r["quality_pass"]:
                 best.append(r)
-    json.dump(CACHE, open(f"{OUT}/transcripts.json", "w"), ensure_ascii=False)
+    json.dump(CACHE, open(f"{OUT}/transcripts.json", "w", encoding="utf-8"), ensure_ascii=False)
+    if api_fails:
+        print(f"  ⚠ No se pudo leer el audio de {api_fails} de {gate_total} videos (límite o falla del servicio).")
+        print(f"    Esos pasaron por puntaje y Claude los revisará al clasificar.")
     best.sort(key=lambda r: r["vir_score"], reverse=True)
 
-    json.dump(rows, open(f"{OUT}/all_scored.json", "w"), ensure_ascii=False, indent=1, default=str)
-    json.dump(best, open(f"{OUT}/best.json", "w"), ensure_ascii=False, indent=1, default=str)
+    json.dump(rows, open(f"{OUT}/all_scored.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1, default=str)
+    json.dump(best, open(f"{OUT}/best.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1, default=str)
     meta = dict(niche=args.niche, hashtag=hashtag, platforms=plats, scraped=len(rows),
                 passed_prefilter=len(passed), quality_videos=len(best),
-                run_date=NOW.date().isoformat())
-    json.dump(meta, open(f"{OUT}/meta.json", "w"), ensure_ascii=False, indent=1)
+                transcript_api_fails=api_fails, run_date=NOW.date().isoformat())
+    json.dump(meta, open(f"{OUT}/meta.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     if not best:
-        print(f"\n⚠ Ningún video pasó el filtro de transcript (eran música o casi no hablaban).")
+        print(f"\n⚠ Ningún video pasó el filtro final (eran música o casi no hablaban).")
         print(f"   Los datos quedaron en {OUT}/all_scored.json por si quieres revisarlos.")
         print(f"   Prueba con otro hashtag o corre con --top 10 para dar más chance.")
     else:
@@ -366,14 +413,17 @@ def run():
 def main():
     try:
         run()
+    except FatalError as e:
+        sys.exit(str(e))
     except SystemExit:
         raise
     except KeyboardInterrupt:
         sys.exit("\n⏹ Corrida cancelada.")
     except Exception as e:
-        sys.exit(f"❌ Algo salió mal que no esperábamos: {type(e).__name__}: {e}\n"
-                 f"   Vuelve a correr el comando. Si sigue fallando, pídele a Claude:\n"
-                 f"   \"corre el pipeline de nuevo y dime por qué falla\"")
+        sys.exit("❌ Algo salió mal que no esperábamos.\n"
+                 f"   Detalle técnico (por si Claude lo necesita): {type(e).__name__}: {e}\n"
+                 "   Vuelve a correr el comando. Si sigue fallando, pídele a Claude:\n"
+                 "   \"corre el pipeline de nuevo y dime por qué falla\"")
 
 
 if __name__ == "__main__":

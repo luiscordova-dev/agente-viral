@@ -13,7 +13,7 @@ Comandos:
   python3 config.py set-cta --url <link>
   python3 config.py get-cta
 """
-import json, os, sys, urllib.request, argparse
+import json, os, sys, urllib.request, urllib.error, argparse
 
 DIR = os.path.expanduser("~/.agente-viral")
 PATH = os.path.join(DIR, "config.json")
@@ -27,8 +27,11 @@ DEFAULT_CTA_URL = "CAMBIA_ESTE_LINK"
 
 def _read(path):
     try:
-        return json.load(open(path))
+        return json.load(open(path, encoding="utf-8"))
+    except FileNotFoundError:
+        return {}
     except Exception:
+        print(f"⚠ El archivo {path} está dañado. Vuelve a guardar tus llaves con: config.py set-keys")
         return {}
 
 
@@ -42,7 +45,10 @@ def load():
 
 def save(cfg):
     os.makedirs(DIR, exist_ok=True)
-    json.dump(cfg, open(PATH, "w"), indent=2, ensure_ascii=False)
+    tmp = PATH + ".tmp"
+    with open(tmp, "w", encoding="utf-8") as f:
+        json.dump(cfg, f, indent=2, ensure_ascii=False)
+    os.replace(tmp, PATH)  # escritura atómica: nunca queda un config a medias
     os.chmod(PATH, 0o600)
 
 
@@ -54,7 +60,7 @@ def mask(s):
 
 def cmd_show():
     cfg = load()
-    n = cfg.get("notion", {})
+    n = cfg.get("notion") or {}
     print(f"config: {PATH}")
     if not _read(PATH) and _read(LEGACY_PATH):
         print(f"  (leyendo respaldo de {LEGACY_PATH} — al guardar se migra aquí)")
@@ -87,7 +93,8 @@ def cmd_set_keys():
 
 def cmd_set_notion(a):
     cfg = load()
-    n = cfg.setdefault("notion", {})
+    n = cfg.get("notion") or {}
+    cfg["notion"] = n
     if a.parent:
         n["parent_page_id"] = a.parent
     if a.lista:
@@ -117,7 +124,7 @@ def cmd_check():
     # Apify
     t = os.environ.get("APIFY_TOKEN") or cfg.get("apify_token")
     if not t:
-        print("✗ Apify: sin token. Consíguelo en https://console.apify.com/ → Settings → API & Integrations")
+        print("✗ Apify: sin llave. Consíguela en https://console.apify.com/ → Settings → API & Integrations")
         ok = False
     else:
         try:
@@ -126,7 +133,7 @@ def cmd_check():
                 u = json.load(r)["data"]
             print(f"✓ Apify OK — usuario: {u.get('username')}")
         except Exception:
-            print("✗ Apify: el token no funciona. Revisa que lo copiaste completo, sin espacios.")
+            print("✗ Apify: la llave no funciona. Revisa que la copiaste completa, sin espacios.")
             ok = False
     # Supadata
     k = os.environ.get("SUPADATA_API_KEY") or cfg.get("supadata_api_key")
@@ -141,17 +148,17 @@ def cmd_check():
             print("✓ Supadata OK")
         except urllib.error.HTTPError as e:
             if e.code in (402, 429):
-                print(f"✓ Supadata: llave válida (HTTP {e.code}: límite de crédito, pero autentica)")
+                print("✓ Supadata: tu llave sí funciona. Solo se acabó el crédito del plan gratis por ahora — se renueva solo.")
             else:
-                print(f"✗ Supadata: la llave no funciona (HTTP {e.code}). Revisa que la copiaste completa.")
+                print(f"✗ Supadata: la llave no funciona (error {e.code}). Revisa que la copiaste completa.")
                 ok = False
-        except Exception as e:
-            print(f"✗ Supadata: no se pudo conectar ({e}). Revisa tu internet y vuelve a intentar.")
+        except Exception:
+            print("✗ Supadata: no se pudo conectar. Revisa tu internet y vuelve a intentar.")
             ok = False
     sys.exit(0 if ok else 1)
 
 
-if __name__ == "__main__":
+def main():
     ap = argparse.ArgumentParser()
     sub = ap.add_subparsers(dest="cmd", required=True)
     sub.add_parser("show")
@@ -178,3 +185,15 @@ if __name__ == "__main__":
         cmd_set_cta(a)
     elif a.cmd == "get-cta":
         cmd_get_cta()
+
+
+if __name__ == "__main__":
+    try:
+        main()
+    except SystemExit:
+        raise
+    except KeyboardInterrupt:
+        sys.exit("\n⏹ Cancelado.")
+    except Exception:
+        sys.exit("❌ Algo salió mal guardando o leyendo tu configuración.\n"
+                 "   Revisa que la carpeta ~/.agente-viral no esté bloqueada y vuelve a intentar.")
