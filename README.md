@@ -103,7 +103,7 @@ Armaste tu primer agente y ya está trabajando para ti.
 
 El de verdad atiende tu WhatsApp y tus redes. Responde dudas, capta clientes y cobra. Para tu negocio, o para vendérselo a tus clientes. Ese lo construimos juntos en el workshop en vivo.
 
-**Si te gustó armar este, ven a armar el de verdad → [Próximos workshops](CAMBIA_ESTE_LINK)**
+**Si te gustó armar este, ven a armar el de verdad → [Próximos workshops](https://luma.com/user/luiscordova_ia)**
 
 ---
 

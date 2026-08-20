@@ -21,8 +21,8 @@ PATH = os.path.join(DIR, "config.json")
 LEGACY_PATH = os.path.expanduser("~/.videos-virales/config.json")
 UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36"
 
-# El link del cierre (a dónde invita el agente al terminar). Se cambia UNA vez con set-cta.
-DEFAULT_CTA_URL = "CAMBIA_ESTE_LINK"
+# El link del cierre (a dónde invita el agente al terminar). Se cambia con set-cta.
+DEFAULT_CTA_URL = "https://luma.com/user/luiscordova_ia"
 
 
 def _read(path):
