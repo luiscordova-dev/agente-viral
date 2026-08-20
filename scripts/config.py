@@ -2,8 +2,10 @@
 """
 Configuración del Agente Viral — ~/.agente-viral/config.json (permisos 600).
 
-Las llaves se pasan por VARIABLE DE ENTORNO para no exponerlas en el
-historial de la shell.
+Las llaves se pasan por VARIABLE DE ENTORNO para que no viajen como argumento
+del comando. Lo ideal es que el agente (Claude) corra set-keys por ti; si lo
+tecleas tú a mano, recuerda que la línea completa queda en el historial de tu
+shell — bórrala después con `history -p` o limpia ~/.zsh_history.
 
 Comandos:
   python3 config.py show        # estado actual (llaves enmascaradas)
@@ -148,7 +150,7 @@ def cmd_check():
             print("✓ Supadata OK")
         except urllib.error.HTTPError as e:
             if e.code in (402, 429):
-                print("✓ Supadata: tu llave sí funciona. Solo se acabó el crédito del plan gratis por ahora — se renueva solo.")
+                print("✓ Supadata: tu llave sí funciona. Solo se acabó el crédito de tu plan por ahora — revísalo en https://dash.supadata.ai/")
             else:
                 print(f"✗ Supadata: la llave no funciona (error {e.code}). Revisa que la copiaste completa.")
                 ok = False

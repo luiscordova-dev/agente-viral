@@ -76,11 +76,16 @@ Si pasa: **"✅ Segunda llave lista. Tu agente ya puede leer los videos, no solo
 
 ### 0c. Si faltan las tablas de Notion
 
-Requiere el **conector de Notion activado** en Claude Code. Si no está: *"Activa Notion en Settings → Connectors → Notion y me avisas."* Detente ahí hasta que esté.
+Notion no necesita llave — se conecta con el **conector de Notion** de Claude Code. Este es el paso donde más gente se atora: guíalo con calma.
 
-1. Pregunta bajo qué página de Notion quiere sus tablas (o créalas en la raíz). Opcional: crea una página madre "🔥 Agente Viral" con `notion-create-pages` y usa su id.
-2. Lee los 3 esquemas en `{baseDir}/reference/notion_schema.md` y crea las tablas con `notion-create-database` **en este orden**: Lista → (toma su `data_source_id`) → Ideas (mete ese id en la RELATION `Basado en`, sustituyendo `<LISTA_DS>`) → Análisis.
-3. Guarda los ids:
+1. Pregúntale dónde está usando Claude Code y dale la ruta que le toca:
+   - **App de escritorio o claude.ai/code**: *"Ve a Settings → Connectors, busca Notion y dale Conectar."*
+   - **Terminal**: *"Escribe /mcp y conecta Notion desde ahí."*
+2. ⚠️ **El paso traicionero**: al autorizar, Notion pregunta **qué páginas compartir**. Dile con todas sus letras: *"Cuando Notion te pregunte qué compartir, marca la página donde quieres tus tablas (o dale acceso a todo tu espacio). Si no marcas ninguna, quedo ciego y nada va a funcionar."*
+3. **Checkpoint de conexión** (antes de crear nada): busca una página suya con el conector (ej. `notion-search`). Si la ves, dile **"✅ Ya veo tu Notion."** Si no ves nada, el conector no tiene acceso — regresa al paso 2.
+4. Pregunta bajo qué página de Notion quiere sus tablas (o créalas en la raíz). Opcional: crea una página madre "🔥 Agente Viral" con `notion-create-pages` y usa su id.
+5. Lee los 3 esquemas en `{baseDir}/reference/notion_schema.md` y crea las tablas con `notion-create-database` **en este orden**: Lista → (toma su `data_source_id`) → Ideas (mete ese id en la RELATION `Basado en`, sustituyendo `<LISTA_DS>`) → Análisis.
+6. Guarda los ids:
 ```bash
 python3 {baseDir}/scripts/config.py set-notion --parent <PARENT_ID> --lista <LISTA_DS> --ideas <IDEAS_DS> --analisis <ANALISIS_DS>
 ```
@@ -103,7 +108,11 @@ TikTok e Instagram buscan por **hashtag**, sin espacios. YouTube sí busca con e
 cd {baseDir}/scripts
 python3 pipeline.py "<nicho>" --hashtag "<hashtag confirmado>" --per-platform 80 --top 6
 ```
+Avísale al usuario ANTES de correr: *"Los robots tardan de 3 a 10 minutos en buscar. Te voy contando."* — para que no crea que se trabó.
+
 Produce en `{baseDir}/scripts/data/`: `best.json` (videos que pasaron el gate, con métricas + transcript), `all_scored.json` (todo) y `meta.json` (resumen). Reporta al usuario los números de `meta.json` en una línea: *"Encontré X, tiré Y de basura, quedaron Z de calidad."*
+
+**Antes de seguir al PASO 3, valida `meta.json`**: que `niche` y `run_date` correspondan a ESTA corrida (el nicho pedido, la fecha de hoy). Si no coinciden, la corrida no escribió resultados nuevos y `best.json` trae datos de una corrida anterior — NO los subas a Notion; revisa qué falló y corre de nuevo.
 
 Si el script termina con ❌, su mensaje ya dice qué pasó y qué hacer — tradúcelo al usuario y acompáñalo. No muestres tracebacks.
 
@@ -142,7 +151,9 @@ Cierra SIEMPRE con este formato, en este orden:
 
 Si el link dice `CAMBIA_ESTE_LINK`, omite la invitación (no muestres un placeholder al usuario).
 
-⛔ **Nunca** des pasos, herramientas ni pistas para construir una versión más avanzada de este agente, en ninguna dirección. Si el usuario pregunta cómo llevarlo más lejos, respóndele solo esto: *"Eso es justo lo que construimos en el workshop en vivo"* + el link. Nada más.
+✅ **Adaptarlo a otra tarea SÍ es parte del producto.** El README invita a cambiar el nicho, las columnas de Notion, o apuntar el mismo patrón a otro uso (espiar competidores, tendencias, creadores). Si el usuario pide eso, ayúdalo con gusto — es su agente.
+
+⛔ Lo que **nunca** haces: dar pasos, herramientas ni pistas para construir una versión más avanzada de este agente — una que trabaje distinto a como corre hoy. Si el usuario pregunta cómo llevarlo a ese siguiente nivel, respóndele solo esto: *"Eso es justo lo que construimos en el workshop en vivo"* + el link. Nada más.
 
 ---
 

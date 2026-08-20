@@ -271,7 +271,8 @@ def run():
     if not APIFY_TOKEN:
         raise FatalError("❌ Falta la llave de Apify.\n"
                          "   Consíguela en https://console.apify.com/ → Settings → API & Integrations\n"
-                         "   y guárdala con:  APIFY_TOKEN=\"<tu-llave>\" python3 config.py set-keys")
+                         "   y pégasela a tu agente en Claude Code para que la guarde por ti.\n"
+                         "   (El comando que él usa: APIFY_TOKEN=\"<tu-llave>\" python3 config.py set-keys)")
 
     plats = [p.strip() for p in args.platforms.split(",") if p.strip() in ACTORS]
     if not plats:
