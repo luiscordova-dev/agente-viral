@@ -33,7 +33,21 @@ python3 {baseDir}/scripts/config.py show
 
 Si dice `LISTO PARA CORRER: sí`, salta al PASO 1.
 
-Si falta algo, guía al usuario **una llave a la vez**. No le tires la lista completa: paso, checkpoint, siguiente paso.
+Si falta algo, PRIMERO muéstrale al usuario el mapa completo, para que sepa a dónde va:
+
+> Para dejarte funcionando necesito 3 cuentas. Las 3 son gratis:
+>
+> | Cuenta | Para qué | Qué necesito de ahí |
+> |---|---|---|
+> | [Apify](https://console.apify.com/) | Corre los robots de búsqueda | Una llave (su "Personal API token") |
+> | [Supadata](https://supadata.ai/) | Lee lo que se dice en los videos | Una llave (su "API key") |
+> | [Notion](https://www.notion.so/) | Ahí viven tus tablas | Nada de llaves — solo activar el conector de Notion en Claude Code |
+>
+> Vamos una por una. Yo te digo exactamente dónde dar clic. En ~10 minutos quedas.
+
+Y luego guíalo **una llave a la vez**. No le tires todos los pasos juntos: paso, checkpoint, siguiente paso. Si en algún momento `python3` no existe en su Mac, macOS le va a ofrecer instalar las herramientas — dile que acepte y espere; es una sola vez.
+
+**Regla de seguridad**: las llaves se pegan en el chat y TÚ las guardas por variable de entorno con `set-keys` (nunca como argumento del comando, nunca en un archivo del repo). No repitas la llave completa de vuelta en el chat.
 
 ### 0a. Si falta la llave de Apify (obligatoria)
 
