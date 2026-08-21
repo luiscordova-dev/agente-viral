@@ -9,7 +9,7 @@ Un agente de IA que trabaja en tu computadora. Le dices un nicho — cocina, fin
 5. **Detecta a los David**: videos con muchas más vistas que seguidores tiene su autor. Esos ganaron por el formato, no por la fama — y son los que tú sí puedes replicar.
 6. **Te deja 3 tablas en tu Notion**: los virales con sus números, ideas adaptadas a tu canal (o al de tu cliente), y el análisis de qué está funcionando.
 
-Necesitas Claude Code ya instalado — el Roadmap que te trajo aquí lo deja listo. ¿Llegaste directo a este repo? Instala Claude Code primero: [claude.com/claude-code](https://claude.com/claude-code).
+Necesitas Claude Code ya instalado — el mapa que te trajo aquí lo deja listo. ¿Llegaste directo a este repo? Instala Claude Code primero: [claude.com/claude-code](https://claude.com/claude-code).
 
 ## Instálalo (pídeselo a Claude)
 
@@ -45,7 +45,7 @@ Si te dice que la carpeta ya existe, bórrala con `rm -rf ~/.claude/skills/agent
 | [Supadata](https://supadata.ai/) | Lee lo que se dice en los videos | Gratis |
 | [Notion](https://www.notion.so/) | Ahí viven tus tablas (se activa como conector en Claude Code, sin llave) | Gratis |
 
-El agente te guía para sacar cada llave cuando lo saludes. Cada corrida gasta menos de $0.50 USD de tu crédito de Apify. ¿Quieres más cobertura? Pídele que revise más videos por plataforma — cuesta un poco más.
+El agente te guía para sacar cada llave cuando lo saludes. Las tres cuentas son gratis y traen crédito incluido: las primeras corridas no te cuestan nada. Si le das mucho uso, cada corrida sale en menos de $0.50 USD. ¿Quieres más cobertura? Pídele que revise más videos por plataforma — cuesta un poco más.
 
 🔒 **Tus llaves nunca salen de tu computadora.** Las pegas en un archivo, el agente las guarda en `~/.agente-viral/` con permisos de solo-dueño, y limpia el archivo. Nunca se suben a ningún lado ni pasan por el chat.
 
@@ -92,7 +92,7 @@ Fíjate en la diferencia: el archivo [pipeline.py](scripts/pipeline.py) es la pa
 
 ## Adáptalo a otra cosa (cambia 2 archivos)
 
-El patrón que acabas de armar — *buscar afuera → filtrar → analizar → escribir en Notion* — sirve para mucho más que videos:
+El sistema que acabas de armar — *buscar afuera → filtrar → analizar → escribir en Notion* — sirve para mucho más que videos:
 
 - **Espiar a tu competencia**: mismas plataformas, pero el nicho es el nombre de tus 5 competidores.
 - **Detectar tendencias de producto**: vuelve a correrlo sobre "gadgets de cocina" y compara los análisis de una corrida a otra.
@@ -103,7 +103,7 @@ El patrón que acabas de armar — *buscar afuera → filtrar → analizar → e
 1. **[SKILL.md](SKILL.md)** — las instrucciones del agente. Cambia el PASO 3 (cómo clasifica) y el PASO 5 (qué ideas genera) y tienes un agente distinto.
 2. **[reference/notion_schema.md](reference/notion_schema.md)** — las columnas de tus tablas. Agrega o quita columnas según lo que quieras guardar.
 
-Abre Claude Code y dile: *"lee el SKILL.md de agente-viral y ayúdame a adaptarlo para espiar competidores"*. Ese es el punto: ya entendiste el patrón, ahora Claude te ayuda a repetirlo.
+Abre Claude Code y dile: *"lee el SKILL.md de agente-viral y ayúdame a adaptarlo para espiar competidores"*. Ese es el punto: ya entendiste el sistema, ahora Claude te ayuda a repetirlo.
 
 ## Lo honesto (qué NO hace)
 
@@ -119,7 +119,7 @@ Abre Claude Code y dile: *"lee el SKILL.md de agente-viral y ayúdame a adaptarl
 
 Armaste tu primer agente y ya está trabajando para ti.
 
-El de verdad atiende tu WhatsApp y tus redes. Responde dudas, capta clientes y cobra. Para tu negocio, o para vendérselo a tus clientes. Ese lo construimos juntos en el workshop en vivo.
+El de verdad atiende tu WhatsApp y tus redes. Responde dudas, capta clientes, agenda citas y manda links de cobro. Para tu negocio, o para vendérselo a tus clientes. Ese lo construimos juntos en el workshop en vivo.
 
 **Si te gustó armar este, ven a armar el de verdad → [Próximos workshops](https://luma.com/user/luiscordova_ia)**
 
