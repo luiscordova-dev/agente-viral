@@ -13,10 +13,9 @@ Qué hace, en orden:
 El agente (Claude) toma esos archivos y hace lo que una máquina no puede: clasificar,
 mirar las portadas, escribir las ideas y llenar Notion.
 
-De dónde salen las llaves, en este orden:
+De dónde salen las llaves, y de ningún otro lado:
   1. las variables de entorno APIFY_TOKEN y SUPADATA_API_KEY
-  2. ~/.agente-viral/config.json
-  3. lo que ya tengas del CLI de Apify (~/.apify/auth.json) o en ~/.supadata.json
+  2. ~/.agente-viral/config.json, que el agente llena guiándote la primera vez
 
 Cosas que costó descubrir y no hay que volver a probar:
   · TikTok solo responde bien buscando por hashtag; por palabra clave falla.
@@ -36,31 +35,21 @@ CONFIG_PATH = os.path.expanduser("~/.agente-viral/config.json")
 
 
 def load_config():
-    # mismo criterio que config.py: manda ~/.agente-viral/config.json, y al final
-    # rellena con las llaves del CLI de Apify (`apify login`) o de ~/.supadata.json
-    # si el usuario ya las tiene guardadas ahí.
-    cfg = {}
-    if os.path.exists(CONFIG_PATH):
-        try:
-            cfg = json.load(open(CONFIG_PATH, encoding="utf-8")) or {}
-        except Exception:
-            print(f"⚠ El archivo {CONFIG_PATH} está dañado. Vuelve a guardar tus llaves con: config.py set-keys")
-    for path, field, key in (("~/.apify/auth.json", "token", "apify_token"),
-                             ("~/.supadata.json", "api_key", "supadata_api_key")):
-        if cfg.get(key):
-            continue
-        try:
-            v = json.load(open(os.path.expanduser(path), encoding="utf-8")).get(field)
-            if v:
-                cfg[key] = v
-        except Exception:
-            pass
-    return cfg
+    """Lee ~/.agente-viral/config.json y nada más. A propósito: el agente no
+    husmea llaves en otros archivos de la computadora — si falta configuración,
+    te guía para dártela, en vez de usar una llave vieja a tus espaldas."""
+    if not os.path.exists(CONFIG_PATH):
+        return {}
+    try:
+        return json.load(open(CONFIG_PATH, encoding="utf-8")) or {}
+    except Exception:
+        print(f"⚠ El archivo {CONFIG_PATH} está dañado. Vuelve a guardar tus llaves con: config.py set-keys")
+        return {}
 
 
 CFG = load_config()
-# El .env del repo NO es fuente de llaves en runtime: es solo la puerta de entrada
-# que config.py set-keys importa y limpia. Fuente única: env var > config > legacy.
+# El .env del repo NO es fuente de llaves aquí: es solo la puerta por donde entran,
+# y config.py set-keys las importa y lo limpia. Dos fuentes, ninguna más.
 APIFY_TOKEN = os.environ.get("APIFY_TOKEN") or CFG.get("apify_token")
 SUPADATA_KEY = os.environ.get("SUPADATA_API_KEY") or CFG.get("supadata_api_key")
 

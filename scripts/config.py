@@ -95,30 +95,11 @@ def _read(path):
         return {}
 
 
-def legacy_cli_keys():
-    """Si ya usas el CLI de Apify (`apify login`) o dejaste la llave de Supadata
-    a mano, las tomamos de ahí — así no tienes que sacarlas otra vez."""
-    keys = {}
-    try:
-        t = json.load(open(os.path.expanduser("~/.apify/auth.json"), encoding="utf-8")).get("token")
-        if t:
-            keys["apify_token"] = t
-    except Exception:
-        pass
-    try:
-        k = json.load(open(os.path.expanduser("~/.supadata.json"), encoding="utf-8")).get("api_key")
-        if k:
-            keys["supadata_api_key"] = k
-    except Exception:
-        pass
-    return keys
-
-
 def load():
-    cfg = _read(PATH)
-    for k, v in legacy_cli_keys().items():  # relleno: llaves del CLI, solo si faltan
-        cfg.setdefault(k, v)
-    return cfg
+    """Lee la configuración guardada. Y solo esa: el agente NUNCA sale a buscar
+    llaves por otros rincones de la computadora. La primera vez te guía para
+    pedírtelas — si no, podría usar una llave vieja sin que te enteres."""
+    return _read(PATH)
 
 
 def save(cfg):
