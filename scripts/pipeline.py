@@ -31,18 +31,31 @@ LEGACY_CONFIG_PATH = os.path.expanduser("~/.videos-virales/config.json")
 
 def load_config():
     # mismo criterio que config.py: el archivo nuevo manda; si está vacío o no
-    # existe, se cae al respaldo viejo.
+    # existe, se cae al respaldo viejo; y al final rellena con las llaves del
+    # CLI de Apify (`apify login`) o de ~/.supadata.json si el usuario ya las tiene.
+    cfg = {}
     for path in (CONFIG_PATH, LEGACY_CONFIG_PATH):
         if not os.path.exists(path):
             continue
         try:
-            cfg = json.load(open(path, encoding="utf-8"))
+            found = json.load(open(path, encoding="utf-8"))
         except Exception:
             print(f"⚠ El archivo {path} está dañado. Vuelve a guardar tus llaves con: config.py set-keys")
             continue
-        if cfg:
-            return cfg
-    return {}
+        if found:
+            cfg = found
+            break
+    for path, field, key in ((("~/.apify/auth.json"), "token", "apify_token"),
+                             (("~/.supadata.json"), "api_key", "supadata_api_key")):
+        if cfg.get(key):
+            continue
+        try:
+            v = json.load(open(os.path.expanduser(path), encoding="utf-8")).get(field)
+            if v:
+                cfg[key] = v
+        except Exception:
+            pass
+    return cfg
 
 
 CFG = load_config()

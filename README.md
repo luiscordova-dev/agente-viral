@@ -33,7 +33,11 @@ hola agente viral
 | [Supadata](https://supadata.ai/) | Lee lo que se dice en los videos | Gratis |
 | [Notion](https://www.notion.so/) | Ahí viven tus tablas (se activa como conector en Claude Code, sin llave) | Gratis |
 
-El agente te guía para sacar cada llave cuando lo saludes. Cada corrida gasta menos de $0.50 USD de tu crédito de Apify.
+El agente te guía para sacar cada llave cuando lo saludes. Cada corrida gasta menos de $0.50 USD de tu crédito de Apify. ¿Quieres más cobertura? Pídele que revise más videos por plataforma — cuesta un poco más.
+
+🔒 **Tus llaves nunca salen de tu computadora.** Las pegas en un archivo, el agente las guarda en `~/.agente-viral/` con permisos de solo-dueño, y limpia el archivo. Nunca se suben a ningún lado ni pasan por el chat.
+
+También necesitas **Python 3** — ya viene en macOS y Linux. Si tu Mac te ofrece instalarlo la primera vez, acepta y espera.
 
 ## Cómo se ve una corrida
 
@@ -96,7 +100,7 @@ Abre Claude Code y dile: *"lee el SKILL.md de agente-viral y ayúdame a adaptarl
 - **Depende de servicios externos.** Si TikTok cambia sus reglas o Apify falla, esa corrida sale coja. El agente te avisa en español, sin drama.
 - **Los hashtags chicos dan resultados chicos.** Si tu nicho es muy de nicho, el agente te propondrá hashtags más grandes del mismo tema.
 - **De YouTube también llegan videos largos.** Los cortos salen de TikTok e Instagram; los formatos largos que funcionan también son oro para sacar ideas.
-- **No es asesoría.** El score de viralidad es matemática sobre datos públicos, no una garantía de que tu video pegue.
+- **No es asesoría.** El score de viralidad es matemática sobre datos públicos, no una garantía de que tu video pegue. Compara cada video contra los de SU plataforma (un millón de views en TikTok no vale lo mismo que en YouTube), pero nadie puede prometerte que copiar un formato funcione.
 
 ## El siguiente
 

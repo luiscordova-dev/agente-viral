@@ -93,12 +93,30 @@ def _read(path):
         return {}
 
 
+def legacy_cli_keys():
+    """Si ya usas el CLI de Apify (`apify login`) o dejaste la llave de Supadata
+    a mano, las tomamos de ahí — así no tienes que sacarlas otra vez."""
+    keys = {}
+    try:
+        t = json.load(open(os.path.expanduser("~/.apify/auth.json"), encoding="utf-8")).get("token")
+        if t:
+            keys["apify_token"] = t
+    except Exception:
+        pass
+    try:
+        k = json.load(open(os.path.expanduser("~/.supadata.json"), encoding="utf-8")).get("api_key")
+        if k:
+            keys["supadata_api_key"] = k
+    except Exception:
+        pass
+    return keys
+
+
 def load():
-    cfg = _read(PATH)
-    if cfg:
-        return cfg
-    # respaldo: config vieja (solo lectura; al guardar se escribe en la ruta nueva)
-    return _read(LEGACY_PATH)
+    cfg = _read(PATH) or _read(LEGACY_PATH)  # respaldo: config vieja de videos-virales
+    for k, v in legacy_cli_keys().items():   # relleno: llaves del CLI, solo si faltan
+        cfg.setdefault(k, v)
+    return cfg
 
 
 def save(cfg):
@@ -217,8 +235,11 @@ def cmd_check():
             with urllib.request.urlopen(req, timeout=20) as r:
                 u = json.load(r)["data"]
             print(f"✓ Apify OK — usuario: {u.get('username')}")
-        except Exception:
+        except urllib.error.HTTPError:
             print("✗ Apify: la llave no funciona. Revisa que la copiaste completa, sin espacios.")
+            ok = False
+        except Exception:
+            print("✗ Apify: no se pudo conectar. Revisa tu internet y vuelve a intentar.")
             ok = False
     # Supadata
     k = os.environ.get("SUPADATA_API_KEY") or cfg.get("supadata_api_key")
