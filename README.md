@@ -19,13 +19,13 @@ Abre Claude Code y pégale esto:
 Instala este agente: https://github.com/luiscordova-dev/agente-viral
 ```
 
-Él lo descarga solo. **Cierra esa sesión y abre una nueva** para que lo detecte, y salúdalo:
+Él lo descarga solo y queda listo al instante. Salúdalo en el mismo chat:
 
 ```
 hola agente viral
 ```
 
-¿No te contesta como Agente Viral? Pídele a Claude: *"revisa si existe la carpeta ~/.claude/skills/agente-viral"* — él lo arregla.
+¿No te contesta como Agente Viral? Cierra la sesión y abre una nueva — con eso queda. Si aun así no, pídele a Claude: *"revisa si existe la carpeta ~/.claude/skills/agente-viral"*.
 
 Él se presenta y te lleva de la mano. Te dice exactamente dónde sacar cada llave. Te abre un archivo donde las pegas — nunca van en el chat. Revisa que funcionen. Crea tus tablas de Notion solo. Y te hace 3 preguntas rápidas sobre tu negocio, para que las ideas salgan a tu medida y no genéricas. Eso se hace una sola vez — después, cada corrida es escribir una frase.
 
