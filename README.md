@@ -124,7 +124,7 @@ Armaste tu primer agente y ya trabaja para ti. Corre en tu computadora: trabaja 
 
 El que atiende a tus clientes trabaja aunque tú no estés. Responde dudas, capta clientes, agenda citas y manda links de cobro — en tu WhatsApp y en tus redes. Para tu negocio, o para vendérselo a tus clientes.
 
-**Ese lo construimos juntos, en vivo → [Próximos workshops](https://luma.com/user/luiscordova_ia)**
+**Ese lo construimos juntos, en vivo → [Próximos workshops](https://lu.ma/luiscordova)**
 
 ---
 

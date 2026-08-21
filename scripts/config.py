@@ -44,7 +44,7 @@ SUPADATA_API_KEY=""
 UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36"
 
 # El link del cierre (a dónde invita el agente al terminar). Se cambia con set-cta.
-DEFAULT_CTA_URL = "https://luma.com/user/luiscordova_ia"
+DEFAULT_CTA_URL = "https://lu.ma/luiscordova"
 
 
 def read_env_file():
