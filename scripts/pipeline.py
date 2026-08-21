@@ -406,8 +406,7 @@ def run():
         ad = age_days(r["created"])
         r["age_days"] = ad
         r["views_per_day"] = r["views"] / ad if ad else 0
-        # el factor David: cuántas vistas por cada seguidor del autor.
-        # Alto = el FORMATO ganó, no la fama del autor -> replicable.
+        # vistas por seguidor: alto = el FORMATO ganó, no la fama del autor -> replicable.
         r["reach_ratio"] = round(r["views"] / r["followers"], 1) if r.get("followers") else None
         r["reject_reasons"] = quality_check(r)
         r["passed_prefilter"] = not r["reject_reasons"]
