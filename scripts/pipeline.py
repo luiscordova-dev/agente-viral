@@ -180,14 +180,16 @@ def dataset(rid):
 # extractor recorre la tabla. Agregar una plataforma = agregar una entrada.
 
 def antiguedad_en_dias(marca_de_tiempo):
-    """Días transcurridos desde que se publicó. Mínimo 0.1 para no dividir entre cero."""
+    """Días transcurridos desde que se publicó. Mínimo 0.1 para no dividir entre cero.
+    Devuelve None ante cualquier fecha que no se pueda restar (incluidas las que
+    vienen sin zona horaria, como '2026-08-21')."""
     if not marca_de_tiempo:
         return None
     try:
         publicado = dt.datetime.fromisoformat(str(marca_de_tiempo).replace("Z", "+00:00"))
+        transcurrido = (NOW - publicado).total_seconds() / 86400
     except Exception:
         return None
-    transcurrido = (NOW - publicado).total_seconds() / 86400
     return transcurrido if transcurrido > 0.1 else 0.1
 
 
@@ -199,6 +201,8 @@ def a_segundos(reloj):
     try:
         numeros = [int(x) for x in partes]
     except ValueError:
+        return None
+    if len(numeros) > 3:              # h:m:s como máximo; más partes es basura
         return None
     total = 0
     for n in numeros:                 # cada posición vale 60 veces más que la anterior
@@ -311,6 +315,8 @@ MAPEO = {
 
 def norm(plat, it):
     """Traduce un item crudo de cualquier plataforma al formato interno común."""
+    if plat not in MAPEO:
+        return None
     fila = {"platform": plat}
     for campo, sacar in MAPEO[plat].items():
         fila[campo] = sacar(it)
@@ -364,16 +370,16 @@ def fetch_transcript(url):
     try:
         with urllib.request.urlopen(peticion, timeout=90) as respuesta:
             cuerpo = json.load(respuesta)
+        contenido = cuerpo.get("content")
+        if isinstance(contenido, str):
+            return contenido
+        if isinstance(contenido, list):  # a veces llega por fragmentos con tiempos
+            return " ".join(f.get("text", "") for f in contenido if isinstance(f, dict))
+        return ""
     except urllib.error.HTTPError as e:
         return f"__ERR__{e.code}"
-    except Exception as e:
+    except Exception as e:               # respuesta con forma inesperada, JSON roto, red caída
         return f"__ERR__{e}"
-    contenido = cuerpo.get("content")
-    if isinstance(contenido, str):
-        return contenido
-    if isinstance(contenido, list):      # a veces llega por fragmentos con tiempos
-        return " ".join(fragmento.get("text", "") for fragmento in contenido)
-    return ""
 
 
 MIN_WORDS, MIN_WPM = 25, 40
