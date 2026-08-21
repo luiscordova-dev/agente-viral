@@ -7,7 +7,7 @@ Hace: scrape (Apify) -> filtro basura -> score viralidad -> gate calidad por
 transcript (Supadata) -> escribe data/best.json + data/meta.json
 
 Las capas de razonamiento (clasificar tipo/hook/idioma, generar ideas, análisis)
-y la escritura a Notion las hace Claude en el skill, leyendo best.json.
+y la escritura a Notion las hace el agente, leyendo best.json.
 
 Credenciales (en este orden de prioridad):
  1. variables de entorno  APIFY_TOKEN / SUPADATA_API_KEY

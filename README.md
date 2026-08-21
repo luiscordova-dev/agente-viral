@@ -14,7 +14,7 @@ Necesitas Claude Code ya instalado — el Roadmap que te trajo aquí lo deja lis
 Abre Claude Code y pégale esto:
 
 ```
-Instala este skill: https://github.com/luiscordova-dev/agente-viral
+Instala este agente: https://github.com/luiscordova-dev/agente-viral
 ```
 
 Él lo descarga solo. **Cierra esa sesión y abre una nueva** para que lo detecte, y salúdalo:
