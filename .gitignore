@@ -13,3 +13,7 @@ config.json
 
 # macOS
 .DS_Store
+
+# notas locales de trabajo (nunca se suben)
+CONTEXTO-LOCAL.md
+*.local.md

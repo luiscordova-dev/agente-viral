@@ -132,33 +132,48 @@ def save(cfg):
     os.chmod(PATH, 0o600)
 
 
-def mask(s):
-    if not s:
+def mask(llave):
+    """Deja ver solo las puntas de una llave, lo justo para reconocerla sin exponerla.
+    Si es tan corta que las puntas la delatarían, se tapa entera."""
+    if not llave:
         return "(falta)"
-    return s[:4] + "…" + s[-4:] if len(s) > 10 else "••••"
+    if len(llave) <= 10:
+        return "••••"
+    return llave[:4] + "…" + llave[-4:]
 
 
 def cmd_show():
+    """Imprime el estado de la configuración, con las llaves tapadas."""
     cfg = load()
-    n = cfg.get("notion") or {}
+    notion = cfg.get("notion") or {}
+
     print(f"config: {PATH}")
-    print(f"  apify_token:      {mask(cfg.get('apify_token'))}")
-    print(f"  supadata_api_key: {mask(cfg.get('supadata_api_key'))}")
-    print(f"  notion.parent:    {n.get('parent_page_id', '(falta)')}")
-    print(f"  notion.lista:     {n.get('lista_ds', '(falta)')}")
-    print(f"  notion.ideas:     {n.get('ideas_ds', '(falta)')}")
-    print(f"  notion.analisis:  {n.get('analisis_ds', '(falta)')}")
-    print(f"  cta_url:          {cfg.get('cta_url', DEFAULT_CTA_URL)}")
-    neg = cfg.get("negocio") or {}
-    if neg:
+    renglones = [
+        ("apify_token:     ", mask(cfg.get("apify_token"))),
+        ("supadata_api_key:", mask(cfg.get("supadata_api_key"))),
+        ("notion.parent:   ", notion.get("parent_page_id", "(falta)")),
+        ("notion.lista:    ", notion.get("lista_ds", "(falta)")),
+        ("notion.ideas:    ", notion.get("ideas_ds", "(falta)")),
+        ("notion.analisis: ", notion.get("analisis_ds", "(falta)")),
+        ("cta_url:         ", cfg.get("cta_url", DEFAULT_CTA_URL)),
+    ]
+    for etiqueta, valor in renglones:
+        print(f"  {etiqueta} {valor}")
+
+    negocio = cfg.get("negocio") or {}
+    if negocio:
         print("  perfil del negocio:")
-        for k, etiqueta in (("que_hace", "a qué se dedica"), ("a_quien", "a quién le habla"), ("objetivo", "qué quiere lograr")):
-            if neg.get(k):
-                print(f"    {etiqueta}: {neg[k]}")
+        for llave, como_se_lee in (("que_hace", "a qué se dedica"),
+                                   ("a_quien", "a quién le habla"),
+                                   ("objetivo", "qué quiere lograr")):
+            if negocio.get(llave):
+                print(f"    {como_se_lee}: {negocio[llave]}")
     else:
         print("  perfil del negocio: (falta — las ideas saldrán genéricas)")
-    ready = bool(cfg.get("apify_token") and n.get("lista_ds") and n.get("ideas_ds") and n.get("analisis_ds"))
-    print(f"  LISTO PARA CORRER: {'sí' if ready else 'no — falta setup'}")
+
+    puede_correr = bool(cfg.get("apify_token") and notion.get("lista_ds")
+                        and notion.get("ideas_ds") and notion.get("analisis_ds"))
+    print(f"  LISTO PARA CORRER: {'sí' if puede_correr else 'no — falta setup'}")
 
 
 def cmd_init_env():
@@ -172,29 +187,31 @@ def cmd_init_env():
 
 
 def cmd_set_keys():
+    """Importa las llaves del .env (o de variables de entorno) y limpia el archivo."""
     cfg = load()
-    env_keys, leftovers = read_env_file()
-    # prioridad: variable de entorno > archivo .env
-    apify = os.environ.get("APIFY_TOKEN") or env_keys.get("APIFY_TOKEN")
-    supa = os.environ.get("SUPADATA_API_KEY") or env_keys.get("SUPADATA_API_KEY")
-    if not apify and not supa:
+    del_env, sobrantes = read_env_file()
+    # la variable de entorno gana sobre el archivo
+    hallazgos = {
+        "apify_token": os.environ.get("APIFY_TOKEN") or del_env.get("APIFY_TOKEN"),
+        "supadata_api_key": os.environ.get("SUPADATA_API_KEY") or del_env.get("SUPADATA_API_KEY"),
+    }
+    if not any(hallazgos.values()):
         sys.exit("✗ No encontré ninguna llave que guardar.\n"
                  "  Pega tu llave en el archivo .env (entre las comillas), guarda el archivo,\n"
                  "  y vuelve a correr: python3 config.py set-keys\n"
                  "  (Si no tienes el archivo: python3 config.py init-env)")
-    if apify:
-        cfg["apify_token"] = apify.strip()
-    if supa:
-        cfg["supadata_api_key"] = supa.strip()
+    for campo, valor in hallazgos.items():
+        if valor:
+            cfg[campo] = valor.strip()
     save(cfg)
     print("✓ llaves guardadas en", PATH)
-    if not apify:
+    if not hallazgos["apify_token"]:
         print("  (falta APIFY_TOKEN — pégala en el archivo .env y vuelve a correr set-keys)")
-    if not supa:
+    if not hallazgos["supadata_api_key"]:
         print("  (falta SUPADATA_API_KEY — opcional)")
-    if env_keys:
-        if leftovers:
-            print(f"⚠ El .env trae líneas que no reconocí ({', '.join(leftovers)}). No lo limpié — revísalo tú.")
+    if del_env:
+        if sobrantes:
+            print(f"⚠ El .env trae líneas que no reconocí ({', '.join(sobrantes)}). No lo limpié — revísalo tú.")
         elif clean_env_file():
             print("✓ limpié el archivo .env — tus llaves ya viven seguras en", DIR)
         else:
@@ -202,17 +219,15 @@ def cmd_set_keys():
 
 
 def cmd_set_notion(a):
+    """Guarda los identificadores de las 3 tablas y de la página que las contiene."""
     cfg = load()
-    n = cfg.get("notion") or {}
-    cfg["notion"] = n
-    if a.parent:
-        n["parent_page_id"] = a.parent
-    if a.lista:
-        n["lista_ds"] = a.lista
-    if a.ideas:
-        n["ideas_ds"] = a.ideas
-    if a.analisis:
-        n["analisis_ds"] = a.analisis
+    notion = cfg.get("notion") or {}
+    cfg["notion"] = notion
+    for bandera, campo in (("parent", "parent_page_id"), ("lista", "lista_ds"),
+                           ("ideas", "ideas_ds"), ("analisis", "analisis_ds")):
+        valor = getattr(a, bandera, None)
+        if valor:
+            notion[campo] = valor
     save(cfg)
     print("✓ tablas de Notion guardadas en", PATH)
 
@@ -258,48 +273,58 @@ def cmd_get_cta():
     print(load().get("cta_url", DEFAULT_CTA_URL))
 
 
+def _probar_apify(llave):
+    """Le pregunta a Apify quién es el dueño de la llave. Devuelve (ok, mensaje)."""
+    if not llave:
+        return False, "✗ Apify: sin llave. Consíguela en https://console.apify.com/ → Settings → API & Integrations"
+    peticion = urllib.request.Request("https://api.apify.com/v2/users/me",
+                                      headers={"Authorization": f"Bearer {llave}"})
+    try:
+        with urllib.request.urlopen(peticion, timeout=20) as respuesta:
+            quien = json.load(respuesta)["data"]
+        return True, f"✓ Apify OK — usuario: {quien.get('username')}"
+    except urllib.error.HTTPError:
+        return False, "✗ Apify: la llave no funciona. Revisa que la copiaste completa, sin espacios."
+    except Exception:
+        return False, "✗ Apify: no se pudo conectar. Revisa tu internet y vuelve a intentar."
+
+
+def _probar_supadata(llave):
+    """Pide el texto de un video conocido. Si contesta 402 o 429, la llave sirve
+    pero el plan está topado — eso cuenta como buena. Devuelve (ok, mensaje)."""
+    if not llave:
+        return True, "• Supadata: sin llave (opcional, pero recomendada — con ella el agente filtra mejor)"
+    # Cualquier video público sirve para saber si la llave autentica.
+    # Se usa uno de la charla de presentación de Python, que lleva años en línea.
+    sonda = "https://www.youtube.com/watch?v=YYXdXT2l-Gg"
+    peticion = urllib.request.Request(
+        f"https://api.supadata.ai/v1/transcript?url={sonda}&text=true",
+        headers={"x-api-key": llave, "User-Agent": UA})
+    try:
+        with urllib.request.urlopen(peticion, timeout=30) as respuesta:
+            json.load(respuesta)
+        return True, "✓ Supadata OK"
+    except urllib.error.HTTPError as e:
+        if e.code in (402, 429):
+            return True, "✓ Supadata: tu llave sí funciona. Solo se acabó el crédito de tu plan por ahora — revísalo en https://dash.supadata.ai/"
+        return False, f"✗ Supadata: la llave no funciona (error {e.code}). Revisa que la copiaste completa."
+    except Exception:
+        return False, "✗ Supadata: no se pudo conectar. Revisa tu internet y vuelve a intentar."
+
+
 def cmd_check():
+    """Prueba cada llave contra su servicio de verdad y reporta una línea por cada una."""
     cfg = load()
-    ok = True
-    # Apify
-    t = os.environ.get("APIFY_TOKEN") or cfg.get("apify_token")
-    if not t:
-        print("✗ Apify: sin llave. Consíguela en https://console.apify.com/ → Settings → API & Integrations")
-        ok = False
-    else:
-        try:
-            req = urllib.request.Request("https://api.apify.com/v2/users/me",
-                                         headers={"Authorization": f"Bearer {t}"})
-            with urllib.request.urlopen(req, timeout=20) as r:
-                u = json.load(r)["data"]
-            print(f"✓ Apify OK — usuario: {u.get('username')}")
-        except urllib.error.HTTPError:
-            print("✗ Apify: la llave no funciona. Revisa que la copiaste completa, sin espacios.")
-            ok = False
-        except Exception:
-            print("✗ Apify: no se pudo conectar. Revisa tu internet y vuelve a intentar.")
-            ok = False
-    # Supadata
-    k = os.environ.get("SUPADATA_API_KEY") or cfg.get("supadata_api_key")
-    if not k:
-        print("• Supadata: sin llave (opcional, pero recomendada — con ella el agente filtra mejor)")
-    else:
-        try:
-            url = "https://api.supadata.ai/v1/transcript?url=https://www.youtube.com/watch?v=dQw4w9WgXcQ&text=true"
-            req = urllib.request.Request(url, headers={"x-api-key": k, "User-Agent": UA})
-            with urllib.request.urlopen(req, timeout=30) as r:
-                json.load(r)
-            print("✓ Supadata OK")
-        except urllib.error.HTTPError as e:
-            if e.code in (402, 429):
-                print("✓ Supadata: tu llave sí funciona. Solo se acabó el crédito de tu plan por ahora — revísalo en https://dash.supadata.ai/")
-            else:
-                print(f"✗ Supadata: la llave no funciona (error {e.code}). Revisa que la copiaste completa.")
-                ok = False
-        except Exception:
-            print("✗ Supadata: no se pudo conectar. Revisa tu internet y vuelve a intentar.")
-            ok = False
-    sys.exit(0 if ok else 1)
+    sondas = [
+        (_probar_apify, os.environ.get("APIFY_TOKEN") or cfg.get("apify_token")),
+        (_probar_supadata, os.environ.get("SUPADATA_API_KEY") or cfg.get("supadata_api_key")),
+    ]
+    todo_bien = True
+    for probar, llave in sondas:
+        sirve, mensaje = probar(llave)
+        print(mensaje)
+        todo_bien = todo_bien and sirve
+    sys.exit(0 if todo_bien else 1)
 
 
 def main():
@@ -322,25 +347,15 @@ def main():
     sc.add_argument("--url", required=True)
     sub.add_parser("get-cta")
     sub.add_parser("guia")
-    a = ap.parse_args()
-    if a.cmd == "show":
-        cmd_show()
-    elif a.cmd == "check":
-        cmd_check()
-    elif a.cmd == "init-env":
-        cmd_init_env()
-    elif a.cmd == "set-keys":
-        cmd_set_keys()
-    elif a.cmd == "set-notion":
-        cmd_set_notion(a)
-    elif a.cmd == "set-negocio":
-        cmd_set_negocio(a)
-    elif a.cmd == "set-cta":
-        cmd_set_cta(a)
-    elif a.cmd == "get-cta":
-        cmd_get_cta()
-    elif a.cmd == "guia":
-        cmd_guia()
+    argumentos = ap.parse_args()
+    SIN_ARGUMENTOS = {"show": cmd_show, "check": cmd_check, "init-env": cmd_init_env,
+                      "set-keys": cmd_set_keys, "get-cta": cmd_get_cta, "guia": cmd_guia}
+    CON_ARGUMENTOS = {"set-notion": cmd_set_notion, "set-cta": cmd_set_cta,
+                      "set-negocio": cmd_set_negocio}
+    if argumentos.cmd in SIN_ARGUMENTOS:
+        SIN_ARGUMENTOS[argumentos.cmd]()
+    else:
+        CON_ARGUMENTOS[argumentos.cmd](argumentos)
 
 
 if __name__ == "__main__":

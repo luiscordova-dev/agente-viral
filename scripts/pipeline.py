@@ -31,7 +31,7 @@ Uso:
 import json, os, sys, time, math, re, statistics, argparse, datetime as dt
 import urllib.request, urllib.parse, urllib.error
 
-# ---------------- credenciales ----------------
+# ══════ De dónde saca las llaves ══════
 CONFIG_PATH = os.path.expanduser("~/.agente-viral/config.json")
 
 
@@ -103,7 +103,7 @@ def actor_input(plat, niche, hashtag, per_platform):
                 "resultsLimit": per_platform}
 
 
-# ---------------- apify ----------------
+# ══════ Hablar con Apify ══════
 def api(method, path, body=None, timeout=120):
     # el token va por header, nunca en la URL (no aparece en logs ni errores)
     url = f"https://api.apify.com/v2/{path}"
@@ -174,7 +174,7 @@ def dataset(rid):
     return api("GET", f"actor-runs/{rid}/dataset/items?clean=true")
 
 
-# ---------------- normalización ----------------
+# ══════ Traducir lo que devuelve cada plataforma ══════
 # Cada plataforma entrega su JSON con nombres distintos. En vez de escribir tres
 # veces el mismo dict a mano, aquí se declara DE DÓNDE sale cada dato y un solo
 # extractor recorre la tabla. Agregar una plataforma = agregar una entrada.
@@ -234,6 +234,16 @@ def describir_audio(meta, llave_titulo, llave_autor, llave_original):
     return firma + (" (original)" if meta.get(llave_original) else "")
 
 
+def titulo_con_contexto(item):
+    """YouTube separa título y descripción; para clasificar conviene tener los dos.
+    El título va completo y de la descripción basta el arranque."""
+    titulo = (item.get("title") or "").strip()
+    descripcion = (item.get("text") or "").strip()
+    if not descripcion:
+        return titulo
+    return f"{titulo}. {descripcion[:240]}"
+
+
 def _anidado(item, *ruta):
     """Baja por llaves anidadas sin reventar si algún nivel viene nulo."""
     actual = item
@@ -249,66 +259,66 @@ MAPEO = {
     "tiktok": {
         "id":           lambda i: str(i.get("id")),
         "url":          lambda i: i.get("webVideoUrl"),
-        "author":       lambda i: _anidado(i, "authorMeta", "name"),
-        "caption":      lambda i: i.get("text") or "",
-        "hashtags":     lambda i: lista_de_etiquetas(i.get("hashtags")),
-        "views":        lambda i: i.get("playCount") or 0,
-        "likes":        lambda i: i.get("diggCount") or 0,
-        "comments":     lambda i: i.get("commentCount") or 0,
-        "shares":       lambda i: i.get("shareCount") or 0,
-        "saves":        lambda i: i.get("collectCount") or 0,
-        "duration":     lambda i: _anidado(i, "videoMeta", "duration"),
-        "created":      lambda i: i.get("createTimeISO"),
-        "lang":         lambda i: i.get("textLanguage"),
-        "is_slideshow": lambda i: bool(i.get("isSlideshow")),
-        "is_muted":     lambda i: bool(i.get("isMuted")),
-        "is_ad":        lambda i: bool(i.get("isAd") or i.get("isSponsored")),
-        "thumb":        lambda i: _anidado(i, "videoMeta", "coverUrl"),
-        "followers":    lambda i: _anidado(i, "authorMeta", "fans"),
-        "music":        lambda i: describir_audio(i.get("musicMeta"), "musicName", "musicAuthor", "musicOriginal"),
+        "autor":       lambda i: _anidado(i, "authorMeta", "name"),
+        "descripcion":      lambda i: i.get("text") or "",
+        "etiquetas":     lambda i: lista_de_etiquetas(i.get("hashtags")),
+        "vistas":        lambda i: i.get("playCount") or 0,
+        "megusta":        lambda i: i.get("diggCount") or 0,
+        "comentarios":     lambda i: i.get("commentCount") or 0,
+        "compartidos":       lambda i: i.get("shareCount") or 0,
+        "guardados":        lambda i: i.get("collectCount") or 0,
+        "duracion":     lambda i: _anidado(i, "videoMeta", "duration"),
+        "publicado":      lambda i: i.get("createTimeISO"),
+        "idioma":         lambda i: i.get("textLanguage"),
+        "es_carrusel": lambda i: bool(i.get("isSlideshow")),
+        "sin_audio":     lambda i: bool(i.get("isMuted")),
+        "es_anuncio":        lambda i: bool(i.get("isAd") or i.get("isSponsored")),
+        "portada":        lambda i: _anidado(i, "videoMeta", "coverUrl"),
+        "seguidores":    lambda i: _anidado(i, "authorMeta", "fans"),
+        "audio":        lambda i: describir_audio(i.get("musicMeta"), "musicName", "musicAuthor", "musicOriginal"),
     },
     "youtube": {
         "id":           lambda i: str(i.get("id")),
         "url":          lambda i: i.get("url"),
-        "author":       lambda i: i.get("channelName"),
+        "autor":       lambda i: i.get("channelName"),
         # el título manda; se le pega un pedazo de la descripción como contexto
-        "caption":      lambda i: (i.get("title") or "") + " — " + (i.get("text") or "")[:300],
-        "hashtags":     lambda i: lista_de_etiquetas(i.get("hashtags")),
-        "views":        lambda i: i.get("viewCount") or 0,
-        "likes":        lambda i: i.get("likes") or 0,
-        "comments":     lambda i: i.get("commentsCount") or 0,
-        "shares":       lambda i: 0,      # YouTube no publica compartidos
-        "saves":        lambda i: 0,      # ni guardados
-        "duration":     lambda i: a_segundos(i.get("duration")),
-        "created":      lambda i: i.get("date"),
-        "lang":         lambda i: None,
-        "is_slideshow": lambda i: False,
-        "is_muted":     lambda i: False,
-        "is_ad":        lambda i: bool(i.get("isPaidContent")),
-        "thumb":        lambda i: i.get("thumbnailUrl"),
-        "followers":    lambda i: i.get("numberOfSubscribers"),
-        "music":        lambda i: None,
+        "descripcion":      lambda i: titulo_con_contexto(i),
+        "etiquetas":     lambda i: lista_de_etiquetas(i.get("hashtags")),
+        "vistas":        lambda i: i.get("viewCount") or 0,
+        "megusta":        lambda i: i.get("likes") or 0,
+        "comentarios":     lambda i: i.get("commentsCount") or 0,
+        "compartidos":       lambda i: 0,      # YouTube no publica compartidos
+        "guardados":        lambda i: 0,      # ni guardados
+        "duracion":     lambda i: a_segundos(i.get("duration")),
+        "publicado":      lambda i: i.get("date"),
+        "idioma":         lambda i: None,
+        "es_carrusel": lambda i: False,
+        "sin_audio":     lambda i: False,
+        "es_anuncio":        lambda i: bool(i.get("isPaidContent")),
+        "portada":        lambda i: i.get("thumbnailUrl"),
+        "seguidores":    lambda i: i.get("numberOfSubscribers"),
+        "audio":        lambda i: None,
     },
     "instagram": {
         "id":           lambda i: str(i.get("id")),
         "url":          lambda i: i.get("url"),
-        "author":       lambda i: i.get("ownerUsername"),
-        "caption":      lambda i: i.get("caption") or "",
-        "hashtags":     lambda i: lista_de_etiquetas(i.get("hashtags")),
-        "views":        lambda i: i.get("videoPlayCount") or i.get("igPlayCount") or 0,
-        "likes":        lambda i: i.get("likesCount") or 0,
-        "comments":     lambda i: i.get("commentsCount") or 0,
-        "shares":       lambda i: 0,
-        "saves":        lambda i: 0,
-        "duration":     lambda i: i.get("videoDuration"),
-        "created":      lambda i: i.get("timestamp"),
-        "lang":         lambda i: None,
-        "is_slideshow": lambda i: i.get("type") != "Video",
-        "is_muted":     lambda i: False,
-        "is_ad":        lambda i: bool(i.get("paidPartnership") or i.get("isSponsored")),
-        "thumb":        lambda i: i.get("displayUrl"),
-        "followers":    lambda i: None,   # el buscador por hashtag de IG no trae seguidores
-        "music":        lambda i: describir_audio(i.get("musicInfo"), "song_name", "artist_name", "uses_original_audio"),
+        "autor":       lambda i: i.get("ownerUsername"),
+        "descripcion":      lambda i: i.get("caption") or "",
+        "etiquetas":     lambda i: lista_de_etiquetas(i.get("hashtags")),
+        "vistas":        lambda i: i.get("videoPlayCount") or i.get("igPlayCount") or 0,
+        "megusta":        lambda i: i.get("likesCount") or 0,
+        "comentarios":     lambda i: i.get("commentsCount") or 0,
+        "compartidos":       lambda i: 0,
+        "guardados":        lambda i: 0,
+        "duracion":     lambda i: i.get("videoDuration"),
+        "publicado":      lambda i: i.get("timestamp"),
+        "idioma":         lambda i: None,
+        "es_carrusel": lambda i: i.get("type") != "Video",
+        "sin_audio":     lambda i: False,
+        "es_anuncio":        lambda i: bool(i.get("paidPartnership") or i.get("isSponsored")),
+        "portada":        lambda i: i.get("displayUrl"),
+        "seguidores":    lambda i: None,   # el buscador por hashtag de IG no trae seguidores
+        "audio":        lambda i: describir_audio(i.get("musicInfo"), "song_name", "artist_name", "uses_original_audio"),
     },
 }
 
@@ -317,51 +327,89 @@ def norm(plat, it):
     """Traduce un item crudo de cualquier plataforma al formato interno común."""
     if plat not in MAPEO:
         return None
-    fila = {"platform": plat}
+    fila = {"plataforma": plat}
     for campo, sacar in MAPEO[plat].items():
         fila[campo] = sacar(it)
     return fila
 
 
-MEME_MARKERS = {"meme", "memes", "funny", "comedy", "fail", "lol", "joke", "prank", "shitpost", "ratio"}
-MIN_DURATION, MAX_DURATION, MIN_VIEWS = 8, 3600, 1000
+# Videos que técnicamente son virales pero no sirven para aprender nada.
+# La lista es mía y está pensada para español e inglés: cuando el único texto
+# del post son etiquetas de humor, casi siempre es un meme reciclado.
+ETIQUETAS_DE_HUMOR = {
+    "meme", "memes", "humor", "chiste", "chistes", "gracioso", "risa", "comedia",
+    "funny", "comedy", "joke", "lol", "fail", "prank", "broma", "shitpost", "ratio",
+}
+
+# Los límites de qué merece analizarse. Un video de 5 segundos no alcanza a
+# enseñar nada; uno de más de una hora no es contenido corto; y por debajo de
+# mil vistas no hay señal, hay ruido.
+DURACION_MINIMA = 8
+DURACION_MAXIMA = 3600
+VISTAS_MINIMAS = 1000
 
 
-def quality_check(r):
-    reasons = []
-    if r["is_slideshow"]: reasons.append("slideshow/foto")
-    if r["is_muted"]: reasons.append("muted")
-    if r["is_ad"]: reasons.append("ad")
-    d = r["duration"]
-    if d is not None and d < MIN_DURATION: reasons.append("muy_corto")
-    if d is not None and d > MAX_DURATION: reasons.append("muy_largo")
-    if r["views"] < MIN_VIEWS: reasons.append("low_reach")
-    cap_no_tags = re.sub(r"#\w+", "", r["caption"]).strip()
-    if not cap_no_tags and (MEME_MARKERS & set(r["hashtags"])):
-        reasons.append("meme")
-    return reasons
+def quality_check(fila):
+    """Revisa un video contra todos los cortes. Devuelve la lista de razones por
+    las que NO sirve; si vuelve vacía, el video pasa."""
+    descartes = []
+
+    # 1. Que sea un video hablado, no otra cosa
+    if fila["es_carrusel"]:
+        descartes.append("es_foto")
+    if fila["sin_audio"]:
+        descartes.append("sin_sonido")
+    if fila["es_anuncio"]:
+        descartes.append("publicidad")
+
+    # 2. Que dure lo razonable (si la plataforma no dice cuánto, no lo castigamos)
+    segundos = fila["duracion"]
+    if segundos is not None:
+        if segundos < DURACION_MINIMA:
+            descartes.append("muy_corto")
+        elif segundos > DURACION_MAXIMA:
+            descartes.append("muy_largo")
+
+    # 3. Que haya llegado a alguien
+    if fila["vistas"] < VISTAS_MINIMAS:
+        descartes.append("poco_alcance")
+
+    # 4. Meme: el post no dice nada por sí mismo y sus etiquetas son de humor
+    texto_sin_etiquetas = re.sub(r"#\w+", "", fila["descripcion"]).strip()
+    if not texto_sin_etiquetas and ETIQUETAS_DE_HUMOR.intersection(fila["etiquetas"]):
+        descartes.append("meme")
+
+    return descartes
 
 
-def zscores(vals):
-    vals = [v for v in vals if v is not None]
-    if len(vals) < 2:
-        return lambda x: 0.0
-    mu = statistics.mean(vals)
-    sd = statistics.pstdev(vals) or 1.0
-    return lambda x: (x - mu) / sd
+def zscores(valores):
+    """Devuelve una función que convierte un valor en 'qué tan por encima del
+    promedio está', medido en desviaciones. Con menos de dos datos no hay
+    promedio que valga, así que todo queda en cero."""
+    limpios = [x for x in valores if x is not None]
+    if len(limpios) < 2:
+        return lambda _: 0.0
+    promedio = statistics.mean(limpios)
+    desviacion = statistics.pstdev(limpios) or 1.0
+    return lambda x: (x - promedio) / desviacion
 
 
-# ---------------- supadata ----------------
+# ══════ Escuchar lo que se dice ══════
+def es_fallo(texto):
+    """Los textos que no se pudieron leer vienen marcados entre corchetes."""
+    return isinstance(texto, str) and texto.startswith(("[fallo:", "[sin-"))
+
+
 def fetch_transcript(url):
     """Pide a Supadata lo que se habla en un video.
 
-    Devuelve el texto, o una marca "__ERR__<motivo>" si no se pudo. Nunca lanza
+    Devuelve el texto, o una marca entre corchetes si no se pudo. Nunca lanza
     excepción: un video sin transcript no debe tumbar la corrida.
     """
     if not SUPADATA_KEY:
-        return "__ERR__no_key"
+        return "[sin-llave]"
     if not url:
-        return "__ERR__no_url"
+        return "[sin-url]"
     consulta = urllib.parse.urlencode({"url": url, "text": "true"})
     peticion = urllib.request.Request(
         "https://api.supadata.ai/v1/transcript?" + consulta,
@@ -374,18 +422,21 @@ def fetch_transcript(url):
         if isinstance(contenido, str):
             return contenido
         if isinstance(contenido, list):  # a veces llega por fragmentos con tiempos
-            return " ".join(f.get("text", "") for f in contenido if isinstance(f, dict))
+            trozos = [f.get("text", "") for f in contenido if isinstance(f, dict)]
+            if not trozos and contenido:   # llegó una lista, pero no de fragmentos
+                return "[fallo:forma-inesperada]"
+            return " ".join(trozos)
         return ""
     except urllib.error.HTTPError as e:
-        return f"__ERR__{e.code}"
+        return f"[fallo:{e.code}]"
     except Exception as e:               # respuesta con forma inesperada, JSON roto, red caída
-        return f"__ERR__{e}"
+        return f"[fallo:{e}]"
 
 
 MIN_WORDS, MIN_WPM = 25, 40
 
 
-# ---------------- portadas (el gancho visual) ----------------
+# ══════ Bajar las portadas ══════
 def download_thumbs(best, outdir):
     """Baja la portada de cada video finalista (una foto, no el video).
     El agente las mira después para leer el gancho visual. Mejor esfuerzo:
@@ -394,11 +445,11 @@ def download_thumbs(best, outdir):
     os.makedirs(tdir, exist_ok=True)
     n = 0
     for r in best:
-        u = r.get("thumb")
-        r["thumb_file"] = None
+        u = r.get("portada")
+        r["portada_local"] = None
         if not u:
             continue
-        fname = os.path.join(tdir, f"{r['platform']}_{r['id']}.jpg")
+        fname = os.path.join(tdir, f"{r['plataforma']}_{r['id']}.jpg")
         try:
             if not os.path.exists(fname):
                 req = urllib.request.Request(u, headers={"User-Agent": UA})
@@ -406,14 +457,14 @@ def download_thumbs(best, outdir):
                     data = resp.read()
                 with open(fname, "wb") as f:
                     f.write(data)
-            r["thumb_file"] = fname
+            r["portada_local"] = fname
             n += 1
         except Exception:
             pass
     return n
 
 
-# ---------------- main ----------------
+# ══════ El recorrido completo ══════
 def run():
     ap = argparse.ArgumentParser()
     ap.add_argument("niche")
@@ -493,27 +544,27 @@ def run():
 
     print("3) tirando la basura y puntuando viralidad…")
     for r in rows:
-        r["engagement"] = r["likes"] + r["comments"] + r["shares"] + r["saves"]
-        r["eng_rate"] = r["engagement"] / r["views"] if r["views"] else 0
-        ad = antiguedad_en_dias(r["created"])
-        r["age_days"] = ad
-        r["views_per_day"] = r["views"] / ad if ad else 0
+        r["interacciones"] = r["megusta"] + r["comentarios"] + r["compartidos"] + r["guardados"]
+        r["tasa_interaccion"] = r["interacciones"] / r["vistas"] if r["vistas"] else 0
+        ad = antiguedad_en_dias(r["publicado"])
+        r["dias_publicado"] = ad
+        r["vistas_por_dia"] = r["vistas"] / ad if ad else 0
         # vistas por seguidor: alto = el FORMATO ganó, no la fama del autor -> replicable.
-        r["reach_ratio"] = round(r["views"] / r["followers"], 1) if r.get("followers") else None
-        r["reject_reasons"] = quality_check(r)
-        r["passed_prefilter"] = not r["reject_reasons"]
+        r["vistas_por_seguidor"] = round(r["vistas"] / r["seguidores"], 1) if r.get("seguidores") else None
+        r["motivos_descarte"] = quality_check(r)
+        r["paso_filtro"] = not r["motivos_descarte"]
     for plat in plats:
-        grp = [r for r in rows if r["platform"] == plat and r["passed_prefilter"]]
+        grp = [r for r in rows if r["plataforma"] == plat and r["paso_filtro"]]
         if not grp:
             continue
-        zv = zscores([math.log10(r["views"] + 1) for r in grp])
-        zd = zscores([math.log10(r["views_per_day"] + 1) for r in grp])
-        ze = zscores([r["eng_rate"] for r in grp])
+        zv = zscores([math.log10(r["vistas"] + 1) for r in grp])
+        zd = zscores([math.log10(r["vistas_por_dia"] + 1) for r in grp])
+        ze = zscores([r["tasa_interaccion"] for r in grp])
         for r in grp:
-            r["vir_score"] = round(0.35 * zv(math.log10(r["views"] + 1)) +
-                                   0.30 * zd(math.log10(r["views_per_day"] + 1)) +
-                                   0.35 * ze(r["eng_rate"]), 3)
-    passed = [r for r in rows if r["passed_prefilter"]]
+            r["puntaje"] = round(0.35 * zv(math.log10(r["vistas"] + 1)) +
+                                   0.30 * zd(math.log10(r["vistas_por_dia"] + 1)) +
+                                   0.35 * ze(r["tasa_interaccion"]), 3)
+    passed = [r for r in rows if r["paso_filtro"]]
     print(f"   pasaron el filtro: {len(passed)} / {len(rows)}")
     if not passed:
         raise FatalError(f"❌ Se encontraron {len(rows)} videos pero ninguno pasó el filtro de calidad\n"
@@ -528,32 +579,32 @@ def run():
     best = []
     api_fails, gate_total, sin_credito = 0, 0, 0
     for plat in plats:
-        cands = sorted([r for r in passed if r["platform"] == plat],
-                       key=lambda r: r.get("vir_score", 0), reverse=True)[:args.top]
+        cands = sorted([r for r in passed if r["plataforma"] == plat],
+                       key=lambda r: r.get("puntaje", 0), reverse=True)[:args.top]
         for r in cands:
             gate_total += 1
             if r["url"] in CACHE:
                 t = CACHE[r["url"]]
             else:
                 t = fetch_transcript(r["url"])
-                if not t.startswith("__ERR__"):
+                if not es_fallo(t):
                     CACHE[r["url"]] = t
-            err = t.startswith("__ERR__")
+            err = es_fallo(t)
             words = re.findall(r"\w+", t.lower()) if not err else []
             n = len(words)
-            wpm = (n / (r["duration"] / 60)) if r.get("duration") else None
-            r["transcript"] = t[:4000] if not err else ""
-            r["transcript_words"] = n
-            r["wpm"] = round(wpm, 1) if wpm else None
-            if err and SUPADATA_KEY and t not in ("__ERR__no_key",):
+            wpm = (n / (r["duracion"] / 60)) if r.get("duracion") else None
+            r["texto_hablado"] = t[:4000] if not err else ""
+            r["palabras_dichas"] = n
+            r["palabras_por_minuto"] = round(wpm, 1) if wpm else None
+            if err and SUPADATA_KEY and t not in ("[sin-llave]",):
                 api_fails += 1
-                if t == "__ERR__429":     # Supadata contesta 429 cuando se acaba el plan
+                if t == "[fallo:429]":     # Supadata contesta 429 cuando se acaba el plan
                     sin_credito += 1
             # si Supadata falló (o no hay llave), el video pasa por score y
             # Claude lo clasifica/limpia después — un fallo de API no descarta
             # un video bueno.
-            r["quality_pass"] = True if err else (n >= MIN_WORDS and (wpm is None or wpm >= MIN_WPM))
-            if r["quality_pass"]:
+            r["tiene_contenido"] = True if err else (n >= MIN_WORDS and (wpm is None or wpm >= MIN_WPM))
+            if r["tiene_contenido"]:
                 best.append(r)
     json.dump(CACHE, open(f"{OUT}/transcripts.json", "w", encoding="utf-8"), ensure_ascii=False)
     if api_fails:
@@ -563,7 +614,7 @@ def run():
         else:
             print(f"  ⚠ No se pudo leer el audio de {api_fails} de {gate_total} videos (límite o falla del servicio).")
         print(f"    Esos pasaron por puntaje y Claude los revisará al clasificar.")
-    best.sort(key=lambda r: r["vir_score"], reverse=True)
+    best.sort(key=lambda r: r["puntaje"], reverse=True)
 
     print("5) bajando las portadas (el gancho visual)…")
     got = download_thumbs(best, OUT)
@@ -571,9 +622,9 @@ def run():
 
     json.dump(rows, open(f"{OUT}/all_scored.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1, default=str)
     json.dump(best, open(f"{OUT}/best.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1, default=str)
-    meta = dict(niche=args.niche, hashtag=hashtag, platforms=plats, scraped=len(rows),
-                passed_prefilter=len(passed), quality_videos=len(best),
-                transcript_api_fails=api_fails, run_date=NOW.date().isoformat())
+    meta = dict(nicho=args.niche, hashtag=hashtag, plataformas=plats,
+                encontrados=len(rows), pasaron_filtro=len(passed), de_calidad=len(best),
+                sin_audio_leido=api_fails, fecha=NOW.date().isoformat())
     json.dump(meta, open(f"{OUT}/meta.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     if not best:
         # corrida vacía: ayudar a reintentar, NUNCA vender aquí.
