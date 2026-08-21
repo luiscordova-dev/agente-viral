@@ -10,6 +10,9 @@ python3 scripts/config.py set-notion --parent <PARENT_PAGE_ID> --lista <DS> --id
 
 Crea **primero** la tabla Lista (las Ideas se relacionan a ella vía su `data_source_id`).
 
+El orden de las columnas es deliberado: lo que el usuario quiere ver primero
+(puntaje, ganchos, tipo) al frente; los números crudos y lo técnico al fondo.
+
 ---
 
 ## 1) 📊 Lista de Videos con Data
@@ -18,28 +21,28 @@ Crea **primero** la tabla Lista (las Ideas se relacionan a ella vía su `data_so
 CREATE TABLE (
 "Video" TITLE,
 "Plataforma" SELECT('tiktok':pink, 'youtube':red, 'instagram':purple),
-"Nicho" RICH_TEXT,
+"Puntaje Viral" NUMBER COMMENT 'Que tan por encima del promedio quedo, comparado SOLO contra videos de su misma plataforma. 0 = promedio. Arriba de 1 = de los mejores.',
+"Vistas" NUMBER,
+"Gancho (lo que dice)" RICH_TEXT COMMENT 'La frase con la que arranca el video. Aqui vive el 80% del resultado.',
+"Gancho (lo que se ve)" RICH_TEXT COMMENT 'Lo que aparece en la portada: la imagen y el texto en pantalla. Lo que detiene el scroll.',
+"Tipo Contenido" SELECT('educativo':blue, 'storytelling':orange, 'promo':gray, 'reto/demo':green, 'motivacional':yellow, 'musica/baile':pink),
+"Vistas por Seguidor" NUMBER COMMENT 'Cuantas vistas hizo por cada seguidor del autor. Si es alto, gano el FORMATO y no la fama: ese si lo puedes copiar tu.',
 "Autor" RICH_TEXT,
-"URL" URL,
-"Views" NUMBER,
+"Link" URL,
+"Interaccion %" NUMBER FORMAT 'percent' COMMENT 'De cada 100 personas que lo vieron, cuantas hicieron algo (like, comentario, compartir, guardar).',
 "Likes" NUMBER,
 "Comentarios" NUMBER,
-"Shares" NUMBER,
-"Guardados" NUMBER COMMENT 'la señal de valor: la gente guarda lo que piensa usar',
-"Seguidores" NUMBER COMMENT 'seguidores del autor al momento del scrape',
-"Ratio Alcance" NUMBER COMMENT 'views ÷ seguidores. Alto = el formato gano, no la fama (un David)',
-"Engagement Rate" NUMBER FORMAT 'percent',
-"Score Viralidad" NUMBER COMMENT 'z-score normalizado por plataforma',
-"Duracion (s)" NUMBER,
-"WPM" NUMBER COMMENT 'palabras por minuto del transcript',
-"Dias" NUMBER COMMENT 'antiguedad en dias',
-"Tipo Contenido" SELECT('educativo':blue, 'storytelling':orange, 'promo':gray, 'reto/demo':green, 'motivacional':yellow, 'musica/baile':pink),
+"Compartidos" NUMBER,
+"Guardados" NUMBER COMMENT 'La mejor senal de valor: la gente guarda lo que piensa usar despues.',
+"Seguidores" NUMBER COMMENT 'Seguidores que tenia el autor el dia de la busqueda.',
+"Duracion (s)" NUMBER COMMENT 'Cuanto dura el video, en segundos.',
+"Antiguedad (dias)" NUMBER COMMENT 'Cuantos dias lleva publicado.',
+"Palabras por minuto" NUMBER COMMENT 'Que tan rapido habla. Arriba de 150 es ritmo alto; abajo de 60 casi no habla (suele ser musica).',
 "Idioma" RICH_TEXT,
-"Hook" RICH_TEXT COMMENT 'gancho de los primeros segundos',
-"Hook Visual" RICH_TEXT COMMENT 'que se ve en la portada + el texto en pantalla',
-"Audio" RICH_TEXT COMMENT 'que musica/sonido usa (TikTok e IG lo traen)',
-"Transcript" RICH_TEXT,
-"Fecha Scrape" DATE
+"Audio" RICH_TEXT COMMENT 'Que cancion o sonido usa. TikTok e Instagram lo traen; YouTube no.',
+"Nicho" RICH_TEXT,
+"Lo que se dice" RICH_TEXT COMMENT 'Transcripcion de lo que se habla en el video.',
+"Fecha de busqueda" DATE
 )
 ```
 
@@ -50,10 +53,10 @@ La columna `Basado en` es una RELATION al `data_source_id` de la tabla Lista (su
 CREATE TABLE (
 "Idea" TITLE,
 "Nicho Destino" RICH_TEXT,
-"Formato" SELECT('short/reel':pink, 'youtube largo':red, 'tiktok':purple),
-"Hook Propuesto" RICH_TEXT,
-"Angulo" RICH_TEXT COMMENT 'el angulo o giro de la idea',
-"Por que funciona" RICH_TEXT,
+"Formato" SELECT('video corto (TikTok/Reel)':pink, 'video largo (YouTube)':red, 'carrusel':purple),
+"Hook Propuesto" RICH_TEXT COMMENT 'La frase de arranque propuesta para tu video.',
+"Angulo" RICH_TEXT COMMENT 'El giro de la idea: que formato ganador imita.',
+"Por que funciona" RICH_TEXT COMMENT 'La prueba: los numeros del video original en el que se basa.',
 "Basado en" RELATION('<LISTA_DS>', DUAL 'Ideas derivadas'),
 "Estado" SELECT('idea':gray, 'en produccion':yellow, 'publicado':green),
 "Fecha" DATE
@@ -69,11 +72,11 @@ CREATE TABLE (
 "Fecha" DATE,
 "Videos Analizados" NUMBER,
 "Plataformas" MULTI_SELECT('tiktok':pink, 'youtube':red, 'instagram':purple),
-"Hooks Comunes" RICH_TEXT,
+"Hooks Comunes" RICH_TEXT COMMENT 'Los ganchos que se repiten entre los ganadores.',
 "Formatos que Funcionan" RICH_TEXT,
-"Patrones Clave" RICH_TEXT,
+"Patrones Clave" RICH_TEXT COMMENT 'Lo que se repite: visual, hashtags, audio, cuentas chicas que la rompieron.',
 "Insights y Recomendaciones" RICH_TEXT,
-"Oportunidad de Adaptacion" RICH_TEXT COMMENT 'como adaptar estos virales a otro nicho'
+"Oportunidad de Adaptacion" RICH_TEXT COMMENT 'Como adaptar estos virales a otro nicho.'
 )
 ```
 
@@ -81,8 +84,8 @@ CREATE TABLE (
 
 ## Notas para escribir filas (create-pages)
 - Parent: `{type:"data_source_id", data_source_id:"<DS>"}`.
-- La columna URL se referencia como `userDefined:URL` en las propiedades.
-- Las fechas usan la forma expandida: `date:Fecha Scrape:start`, `date:Fecha:start`.
-- `Engagement Rate` se guarda como fracción 0–1 (ej. 0.229 = 22.9%).
-- `Basado en` (relación) se pasa como string JSON array de URLs de página: `["https://www.notion.so/<page_id_sin_guiones>"]`.
+- Las fechas usan la forma expandida: `date:Fecha de busqueda:start`, `date:Fecha:start`.
+- `Interaccion %` se guarda como fracción 0–1 (ej. 0.229 = 22.9%).
+- `Basado en` (relación) se pasa como string JSON array con la URL de página que devolvió la API al crearla: `["<url tal cual la devolvió Notion>"]`. Nunca armes la URL a mano.
 - `Plataformas` (multi-select) se pasa como string JSON array: `["tiktok","youtube"]`.
+- Tablas de versiones anteriores usan nombres viejos (`Views`, `Hook`, `Transcript`, `URL` — que se referencia `userDefined:URL` —, `Fecha Scrape`): usa los nombres que existan en la tabla del usuario y omite lo que no exista.

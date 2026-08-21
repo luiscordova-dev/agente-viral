@@ -139,7 +139,9 @@ def wait_all(runs, timeout=600):
             if st in ("SUCCEEDED", "FAILED", "ABORTED", "TIMED-OUT"):
                 done[plat] = (rid, st)
                 runs.pop(plat)
-                print(f"  ✓ {plat}: {st}")
+                dicho = {"SUCCEEDED": "terminó bien", "FAILED": "falló",
+                         "ABORTED": "se canceló", "TIMED-OUT": "se pasó de tiempo"}[st]
+                print(f"  ✓ {plat}: {dicho}")
         if runs:
             time.sleep(6)
     for plat, rid in runs.items():  # lo que no terminó a tiempo se aborta para no gastar
@@ -344,11 +346,11 @@ def run():
     OUT = args.outdir
     os.makedirs(OUT, exist_ok=True)
 
-    print(f"🎯 nicho: {args.niche}  |  hashtag: #{hashtag}  |  plataformas: {plats}")
+    print(f"🎯 nicho: {args.niche}  |  hashtag: #{hashtag}  |  plataformas: {', '.join(plats)}")
     if " " in args.niche and not args.hashtag:
         print(f"⚠ El nicho tiene varias palabras y no pasaste --hashtag.")
         print(f"  TikTok e Instagram van a buscar #{hashtag} — si ese hashtag no existe, saldrá vacío.")
-        print(f"  Mejor: python3 pipeline.py \"{args.niche}\" --hashtag <un-hashtag-que-la-gente-sí-use>")
+        print(f"  Mejor: dile a tu agente qué hashtag usar y él corre de nuevo.")
     if not SUPADATA_KEY:
         print("⚠ Sin llave de Supadata: el agente no puede leer lo que se dice en los videos y filtrará con más ruido.")
 
@@ -371,7 +373,7 @@ def run():
     rows, malformed, plats_ok = [], 0, 0
     for plat, (rid, st) in done.items():
         if st != "SUCCEEDED":
-            print(f"  ⚠ {plat}: la búsqueda terminó en {st}. Se salta esta plataforma.")
+            print(f"  ⚠ {plat}: la búsqueda no terminó bien. Se salta esta plataforma.")
             continue
         plats_ok += 1
         try:
@@ -395,8 +397,7 @@ def run():
                              "   Espera un par de minutos y vuelve a correr el mismo comando.")
         raise FatalError(f"❌ No se encontró ningún video.\n"
                          f"   Lo más probable: el hashtag #{hashtag} casi no se usa.\n"
-                         f"   Prueba con un hashtag más popular del mismo tema:\n"
-                         f"   python3 pipeline.py \"{args.niche}\" --hashtag <otro-hashtag>")
+                         f"   Pídele a tu agente que lo intente con un hashtag más popular del mismo tema.")
 
     print("3) tirando la basura y puntuando viralidad…")
     for r in rows:
@@ -480,7 +481,7 @@ def run():
     if not best:
         print(f"\n⚠ Ningún video pasó el filtro final (eran música o casi no hablaban).")
         print(f"   Los datos quedaron en {OUT}/all_scored.json por si quieres revisarlos.")
-        print(f"   Prueba con otro hashtag o corre con --top 10 para dar más chance.")
+        print(f"   Pídele a tu agente que lo intente con otro hashtag o con más candidatos.")
     else:
         print(f"\n✅ {len(best)} videos de CALIDAD -> {OUT}/best.json")
     print(f"   resumen -> {OUT}/meta.json")

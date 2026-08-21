@@ -6,10 +6,10 @@ Un agente de IA que trabaja en tu computadora. Le dices un nicho — cocina, fin
 2. **Tira la basura**: memes, anuncios, clips de pura música.
 3. **Lee lo que se dice** en cada video para quedarse con contenido de verdad.
 4. **Mira la portada** de cada finalista y lee el gancho visual: el texto en pantalla y lo que se ve en el primer segundo — lo que detiene el scroll.
-5. **Detecta a los David**: videos con muchas más vistas que seguidores tiene su autor. Esos ganaron por el formato, no por la fama — y son los que tú sí puedes replicar.
+5. **Detecta a las cuentas chicas que la rompieron**: videos con muchas más vistas que seguidores tiene su autor. Esos ganaron por el formato, no por la fama — y son los que tú sí puedes copiar.
 6. **Te deja 3 tablas en tu Notion**: los virales con sus números, ideas adaptadas a tu canal (o al de tu cliente), y el análisis de qué está funcionando.
 
-Necesitas Claude Code ya instalado — el mapa que te trajo aquí lo deja listo. ¿Llegaste directo a este repo? Instala Claude Code primero: [claude.com/claude-code](https://claude.com/claude-code).
+Necesitas Claude Code ya instalado — el mapa que te trajo aquí lo deja listo. ¿Llegaste directo a esta página sin pasar por el mapa? Instala Claude Code primero: [claude.com/claude-code](https://claude.com/claude-code).
 
 ## Instálalo (pídeselo a Claude)
 
@@ -25,6 +25,8 @@ Instala este agente: https://github.com/luiscordova-dev/agente-viral
 hola agente viral
 ```
 
+¿No te contesta como Agente Viral? Pídele a Claude: *"revisa si existe la carpeta ~/.claude/skills/agente-viral"* — él lo arregla.
+
 Él se presenta y te lleva de la mano. Te dice exactamente dónde sacar cada llave. Te abre un archivo donde las pegas — nunca van en el chat. Revisa que funcionen. Y crea tus tablas de Notion solo. Eso se hace una sola vez — después, cada corrida es escribir una frase.
 
 <details>
@@ -34,7 +36,7 @@ hola agente viral
 git clone https://github.com/luiscordova-dev/agente-viral ~/.claude/skills/agente-viral
 ```
 
-Si te dice que la carpeta ya existe, bórrala con `rm -rf ~/.claude/skills/agente-viral` y repite el comando.
+Si te dice que la carpeta ya existe, pídele a Claude que la borre y lo reinstale — es más seguro que borrarla tú a mano.
 </details>
 
 ## Lo que necesitas (son 3 cuentas, las 3 gratis)
@@ -47,7 +49,7 @@ Si te dice que la carpeta ya existe, bórrala con `rm -rf ~/.claude/skills/agent
 
 El agente te guía para sacar cada llave cuando lo saludes. Las tres cuentas son gratis y traen crédito incluido: las primeras corridas no te cuestan nada. Si le das mucho uso, cada corrida sale en menos de $0.50 USD. ¿Quieres más cobertura? Pídele que revise más videos por plataforma — cuesta un poco más.
 
-🔒 **Tus llaves nunca salen de tu computadora.** Las pegas en un archivo, el agente las guarda en `~/.agente-viral/` con permisos de solo-dueño, y limpia el archivo. Nunca se suben a ningún lado ni pasan por el chat.
+🔒 **Tus llaves nunca salen de tu computadora.** Las pegas en un archivo, el agente las guarda en una carpeta privada de tu computadora que solo tú puedes abrir, y limpia el archivo. Nunca se suben a ningún lado ni pasan por el chat.
 
 También necesitas **Python 3** — ya viene en macOS y Linux. Si tu Mac te ofrece instalarlo la primera vez, acepta y espera.
 
@@ -64,7 +66,7 @@ busca videos virales de finanzas personales
 > Encontré 214 videos y tiré 69 de basura. De los 145 que quedaron, revisé a fondo los mejores y 14 pasaron el filtro de contenido.
 >
 > **Top 3:**
-> 1. 🇲🇽 "El error que te tiene pobre" — 2.1M views, pegó por el hook de miedo + número concreto
+> 1. 🇲🇽 "El error que te tiene pobre" — 2.1M views, pegó por el gancho de miedo + número concreto
 > 2. 🇪🇸 "Ahorré $100k en 12 meses así" — 890k views, storytelling con prueba
 > 3. 🇺🇸 "Stop doing this with your paycheck" — 1.4M views, lista de 3 errores
 >
@@ -96,7 +98,7 @@ El sistema que acabas de armar — *buscar afuera → filtrar → analizar → e
 
 - **Espiar a tu competencia**: mismas plataformas, pero el nicho es el nombre de tus 5 competidores.
 - **Detectar tendencias de producto**: vuelve a correrlo sobre "gadgets de cocina" y compara los análisis de una corrida a otra.
-- **Encontrar creadores para colaborar**: la tabla Lista ya trae autor y engagement — ordénala por Engagement Rate.
+- **Encontrar creadores para colaborar**: la tabla Lista ya trae autor e interacción — ordénala por **Interacción %** (de cada 100 que vieron el video, cuántos hicieron algo).
 
 ¿Y para cambiarle el cerebro? Solo se tocan 2 archivos:
 
@@ -112,6 +114,7 @@ Abre Claude Code y dile: *"lee el SKILL.md de agente-viral y ayúdame a adaptarl
 - **Depende de servicios externos.** Si TikTok cambia sus reglas o Apify falla, esa corrida sale coja. El agente te avisa en español, sin drama.
 - **Los hashtags chicos dan resultados chicos.** Si tu nicho es muy de nicho, el agente te propondrá hashtags más grandes del mismo tema.
 - **De YouTube también llegan videos largos.** Los cortos salen de TikTok e Instagram; los formatos largos que funcionan también son oro para sacar ideas.
+- **Las vistas-por-seguidor no aplican a Instagram.** TikTok y YouTube dicen cuántos seguidores tiene el autor; el buscador de Instagram no. Esa columna sale vacía en los reels — no es un error.
 - **No ve el video completo — ve la portada.** El agente escucha lo que se dice y mira la imagen de entrada. Con eso lee el gancho hablado y el visual, que es donde vive la retención.
 - **No es asesoría.** El score de viralidad es matemática sobre datos públicos, no una garantía de que tu video pegue. Compara cada video contra los de SU plataforma (un millón de views en TikTok no vale lo mismo que en YouTube), pero nadie puede prometerte que copiar un formato funcione.
 

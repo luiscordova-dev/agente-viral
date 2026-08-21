@@ -31,21 +31,40 @@ Corre el chequeo de configuración:
 python3 {baseDir}/scripts/config.py show
 ```
 
-Si dice `LISTO PARA CORRER: sí`, salta al PASO 1.
+Si dice `LISTO PARA CORRER: sí`, confirma que las llaves siguen vivas antes de gastar (tarda 2 segundos):
+```bash
+python3 {baseDir}/scripts/config.py check
+```
+Si sale ✓, salta al PASO 1. Si sale ✗, la llave se venció o se revocó: dile en simple qué pasó y regresa a la sección 0a/0b que toque — no arranques la búsqueda, gastarías su crédito para nada.
 
-Si falta algo, PRIMERO muéstrale al usuario el mapa completo, para que sepa a dónde va:
+Aunque diga `sí`: si en `show` ves `supadata_api_key: (falta)`, ofrécesela una vez antes de correr — *"Te falta la llave de Supadata. Sin ella funciono, pero filtro peor: no puedo leer lo que se dice en los videos. Son 2 minutos. ¿La sacamos o corremos así?"* — y respeta su respuesta.
+
+Si falta algo del setup, PRIMERO muéstrale al usuario el mapa completo, para que sepa a dónde va:
 
 > Para dejarte funcionando necesito 3 cuentas. Las 3 son gratis:
 >
 > | Cuenta | Para qué | Qué necesito de ahí |
 > |---|---|---|
-> | [Apify](https://console.apify.com/) | Corre los robots de búsqueda | Una llave (su "Personal API token") |
-> | [Supadata](https://supadata.ai/) | Lee lo que se dice en los videos | Una llave (su "API key") |
-> | [Notion](https://www.notion.so/) | Ahí viven tus tablas | Nada de llaves — solo activar el conector de Notion en Claude Code |
+> | [Apify](https://console.apify.com/sign-up) | Corre los robots de búsqueda | Una llave (ahí se llama "Personal API token") |
+> | [Supadata](https://supadata.ai/) | Lee lo que se dice en los videos | Una llave |
+> | [Notion](https://www.notion.so/) | Ahí viven tus tablas | Nada de llaves — solo darle permiso al conector de Notion |
 >
-> Vamos una por una. Yo te digo exactamente dónde dar clic. En ~10 minutos quedas.
+> **¿Qué es una "llave"?** Una contraseña que esos servicios te dan para que yo pueda usarlos en tu nombre. Como la llave de tu casa: quien la tiene, entra. Por eso nunca la escribes en el chat — la pegas en un archivo que solo vive en tu computadora, yo la guardo en una carpeta privada y limpio el archivo. No es tu contraseña de la cuenta, y la puedes cambiar cuando quieras desde la página del servicio.
+>
+> **¿Qué es un "conector"?** Un permiso que le das a Claude Code para entrar a una app tuya — en este caso, tu Notion. No hay llave que copiar: das clic en "Conectar", te pide permiso, dices que sí, y listo.
+>
+> Vamos una por una. Yo te digo exactamente dónde dar clic. En unos 15 minutos quedas configurado, y la primera búsqueda tarda otros 5-10.
 
-Y luego guíalo **una llave a la vez**. No le tires todos los pasos juntos: paso, checkpoint, siguiente paso. Si en algún momento `python3` no existe en su Mac, macOS le va a ofrecer instalar las herramientas — dile que acepte y espere; es una sola vez.
+Y luego guíalo **una llave a la vez**. No le tires todos los pasos juntos: paso, checkpoint, siguiente paso. Si `python3` no existe en su máquina: en Mac el sistema ofrece instalarlo solo (dile que acepte y espere, tarda unos 10 minutos, es una sola vez); en Windows se instala desde https://www.python.org/downloads/ marcando "Add python.exe to PATH".
+
+### Cuando se atora (pasa siempre — es parte del trabajo, no una excepción)
+
+- **Ofrece la captura ANTES de que la pida.** En cada paso donde el usuario da clics en una página web (Apify, Supadata, Notion), cierra tu instrucción con: *"Si la pantalla no se te ve así, mándame una captura y te digo exactamente dónde darle clic."* No esperes a que se pierda.
+- **Cuando te mande una captura**: MÍRALA (Read muestra imágenes). Descríbele lo que ves con sus palabras y ubícale el botón por posición y color, no solo por nombre: *"Arriba a la derecha, el botón azul que dice X."* Si en la captura ves una llave, un token o un correo: NO los repitas en el chat y avísale que no los comparta.
+- **Si dice "no lo encuentro" o "se me ve diferente"**: nunca repitas la misma instrucción más fuerte. Cambia de camino: (1) pídele la captura, (2) dale el link directo a la pantalla exacta (los de cada sección), (3) dile qué palabra buscar en el buscador de esa página.
+- **Nunca lo hagas sentir lento.** Prohibido "es muy fácil", "solo tienes que", "como te dije". Cuando algo se atora, la culpa es de la herramienta: *"Esa pantalla cambia seguido, no eres tú. Mándame una captura y lo vemos."*
+- **Reintento sin drama.** Si un paso falla 2 veces, ofrécele saltarlo y volver después (Supadata es opcional: se puede correr sin ella) o cerrar y retomar luego — la configuración ya guardada NO se pierde.
+- **Ritmo.** Un paso, una pregunta, un checkpoint. Nunca 2 tareas en el mismo mensaje. Si contesta algo que no era lo que preguntaste, contesta lo suyo primero y regresa al paso.
 
 **Regla de seguridad**: las llaves NUNCA van en el chat. Van en el archivo `.env` (tú se lo abres, él pega, tú lo importas con `set-keys` y el script limpia el `.env` solo). Si el usuario de todos modos pega una llave en el chat, no lo regañes: guárdala al vuelo con `APIFY_TOKEN="<llave>" python3 {baseDir}/scripts/config.py set-keys` (variable de entorno, nunca argumento), no la repitas de vuelta, sugiérele que la próxima vez use el `.env`, y dile que cuando pueda genere una llave nueva en la plataforma (la pegada en el chat queda en esta conversación).
 
@@ -55,45 +74,52 @@ Prepara la puerta de entrada UNA vez y ábrela cuando toque pegar una llave:
 ```bash
 python3 {baseDir}/scripts/config.py init-env && open -e {baseDir}/.env
 ```
-(`init-env` crea el archivo si no existe; `open -e` lo abre en TextEdit. Si `open` no existe — Linux — dile que lo abra con su editor.)
+(`init-env` crea el archivo si no existe; `open -e` lo abre en TextEdit. Si `open` no existe: en Linux, que lo abra con su editor; en Windows, `notepad {baseDir}\.env`.)
 
 Cuando el usuario avise que ya pegó y guardó, importa y limpia en un solo paso:
 ```bash
 python3 {baseDir}/scripts/config.py set-keys
 python3 {baseDir}/scripts/config.py check
 ```
-`set-keys` lee el `.env`, guarda las llaves en `~/.agente-viral/` (fuera del repo, permisos solo-dueño) y **limpia el `.env` solo** — la llave no queda regada en ningún archivo del repo.
+`set-keys` lee el `.env`, guarda las llaves en `~/.agente-viral/` (una carpeta privada que solo su usuario puede abrir) y **limpia el `.env` solo**. Si `set-keys` avisa que el `.env` trae líneas que no reconoció y no lo limpió: limpia TÚ el archivo (regrésalo a la plantilla de `init-env`) para que la llave no quede regada.
 
 ### 0a. Si falta la llave de Apify (obligatoria)
 
 Dile, en este orden:
-1. *"Necesito tu llave de Apify. Apify es quien corre los robots de búsqueda. Tiene plan gratis con crédito mensual."*
-2. Entra a https://console.apify.com/ y crea tu cuenta.
-3. Ve a **Settings → API & Integrations** y copia tu **Personal API token**.
-4. *"Te abrí un archivo que se llama .env. Pega tu llave entre las comillas de APIFY_TOKEN, guarda con Cmd+S, y me avisas."* (ábrelo con el comando de arriba)
+1. *"Necesito tu llave de Apify. Apify es quien corre los robots de búsqueda. Tiene plan gratis con crédito mensual y no te pide tarjeta."*
+2. *"Crea tu cuenta aquí: https://console.apify.com/sign-up"*
+3. *"Ya dentro, entra directo a esta pantalla: https://console.apify.com/settings/integrations — ahí está tu **Personal API token** (así le llaman a tu llave). Dale al botón de copiar. Si te sale una pantalla de bienvenida o un tour, ciérralo y vuelve a pegar ese link."*
+4. *"Te abrí un archivo que se llama .env. Pega tu llave entre las comillas de APIFY_TOKEN, guarda el archivo (Cmd+S en Mac, Ctrl+S en Windows), y me avisas."* (ábrelo con el comando de arriba)
+5. Cierra con: *"Si alguna pantalla no se te ve como te digo, mándame una captura y te guío."*
 
 Cuando avise: corre `set-keys` + `check`. Si `check` da ✓: dile **"✅ Primera llave lista. Tu agente ya puede buscar."** Si da ✗: el mensaje del script dice qué revisar; acompáñalo hasta que pase.
 
 ### 0b. Si falta la llave de Supadata (recomendada)
 
-1. *"Ahora la llave de Supadata. Con ella leo lo que se DICE en cada video, y así separo el contenido de verdad de la música y el relleno. Tiene plan gratis. Si no la quieres, funciono igual pero filtro peor."*
-2. Regístrate en https://supadata.ai/ → Dashboard → **API Keys** → copia la llave.
-3. Mismo camino: ábrele el `.env`, que la pegue en `SUPADATA_API_KEY`, guarde y te avise. Corre `set-keys` + `check`.
+1. *"Ahora la llave de Supadata. Con ella leo lo que se DICE en cada video, y así separo el contenido de verdad de la música y el relleno. Tiene plan gratis y no pide tarjeta. Si no la quieres, funciono igual pero filtro peor."*
+2. *"Crea tu cuenta gratis aquí: https://supadata.ai/ — y ya dentro, tu llave está en https://dash.supadata.ai/ en la sección **API Keys**. Cópiala completa."*
+3. Mismo camino: ábrele el `.env`, que la pegue en `SUPADATA_API_KEY`, guarde y te avise. Corre `set-keys` + `check`. Y ofrece la captura si algo no coincide.
 
 Si pasa: **"✅ Segunda llave lista. Tu agente ya puede leer los videos, no solo contarlos."**
 
 ### 0c. Si faltan las tablas de Notion
 
-Notion no necesita llave — se conecta con el **conector de Notion** de Claude Code. Este es el paso donde más gente se atora: guíalo con calma.
+Notion no necesita llave — se conecta con el **conector** de Claude Code. Este es el paso donde más gente se atora: guíalo con calma y ofrece la captura en cada sub-paso.
 
-1. Pregúntale dónde está usando Claude Code y dale la ruta que le toca:
-   - **App de escritorio o claude.ai/code**: *"Ve a Settings → Connectors, busca Notion y dale Conectar."*
-   - **Terminal**: *"Escribe /mcp y conecta Notion desde ahí."*
-2. ⚠️ **El paso traicionero**: al autorizar, Notion pregunta **qué páginas compartir**. Dile con todas sus letras: *"Cuando Notion te pregunte qué compartir, marca la página donde quieres tus tablas (o dale acceso a todo tu espacio). Si no marcas ninguna, quedo ciego y nada va a funcionar."*
-3. **Checkpoint de conexión** (antes de crear nada): busca una página suya con el conector (ej. `notion-search`). Si la ves, dile **"✅ Ya veo tu Notion."** Si no ves nada, el conector no tiene acceso — regresa al paso 2.
-4. Pregunta bajo qué página de Notion quiere sus tablas (o créalas en la raíz). Opcional: crea una página madre "🔥 Agente Viral" con `notion-create-pages` y usa su id.
-5. Lee los 3 esquemas en `{baseDir}/reference/notion_schema.md` y crea las tablas con `notion-create-database` **en este orden**: Lista → (toma su `data_source_id`) → Ideas (mete ese id en la RELATION `Basado en`, sustituyendo `<LISTA_DS>`) → Análisis.
-6. Guarda los ids:
+1. **¿Tiene cuenta de Notion?** Pregúntalo primero. Si no: *"Créala gratis aquí, toma 1 minuto: https://www.notion.so/signup — me avisas cuando estés dentro."* No sigas hasta que confirme.
+2. Pregúntale dónde está usando Claude Code y dale SOLO la ruta que le toca:
+   - **App de escritorio o claude.ai/code**: *"Ve a Settings → Connectors (ajustes → conectores), busca Notion en la lista y dale Conectar."*
+   - **Terminal**: pégale este comando para agregar el conector:
+     ```bash
+     claude mcp add --transport http notion https://mcp.notion.com/mcp
+     ```
+     Luego: *"Escribe /mcp, elige notion y dale Authenticate. Se te abre el navegador para dar permiso."*
+3. ⚠️ **El paso traicionero**: al autorizar, Notion pregunta **qué páginas compartir**. Dile con todas sus letras: *"Cuando Notion te pregunte qué compartir, marca la página donde quieres tus tablas (o dale acceso a todo tu espacio). Si no marcas ninguna, quedo ciego y nada va a funcionar."*
+4. **Checkpoint de conexión** (antes de crear nada): busca una página suya con el conector (ej. `notion-search`). Si la ves, dile **"✅ Ya veo tu Notion."** Si no ves nada, el conector no tiene acceso — pídele captura de la pantalla de permisos de Notion y repite el paso 3.
+5. **Si el conector no aparece por ningún lado**: no lo dejes colgado. Dile que su versión de Claude Code quizá no lo trae, ofrécele actualizar Claude Code — y mientras, entrégale los resultados en un archivo en su computadora para que no se vaya con las manos vacías.
+6. Pregunta bajo qué página de Notion quiere sus tablas (o créalas en la raíz). Opcional: crea una página madre "🔥 Agente Viral" con `notion-create-pages` y usa su id.
+7. Lee los 3 esquemas en `{baseDir}/reference/notion_schema.md` y crea las tablas con `notion-create-database` **en este orden**: Lista → (toma su `data_source_id`) → Ideas (mete ese id en la RELATION `Basado en`, sustituyendo `<LISTA_DS>`) → Análisis.
+8. Guarda los ids **y las URLs**. Los ids van al config; las URLs tómalas del campo `url` que devuelve `notion-create-database` — **nunca armes una URL de Notion a mano**. Para reencontrarlas después, búscalas con `notion-search`.
 ```bash
 python3 {baseDir}/scripts/config.py set-notion --parent <PARENT_ID> --lista <LISTA_DS> --ideas <IDEAS_DS> --analisis <ANALISIS_DS>
 ```
@@ -106,7 +132,7 @@ Cuando `config.py show` diga `LISTO PARA CORRER: sí`, dile el checkpoint grande
 
 ## PASO 1 — Confirmar el hashtag (ANTES de gastar un centavo)
 
-TikTok e Instagram buscan por **hashtag**, sin espacios. YouTube sí busca con el nicho completo.
+TikTok e Instagram buscan por **hashtag**, sin espacios. YouTube sí busca con el nicho completo. Si el usuario no sabe qué es un hashtag: *"Es la etiqueta con # que la gente le pone a sus videos. Yo busco los videos que llevan la etiqueta de tu nicho."*
 
 - Si el nicho es UNA palabra ("skincare", "finanzas"): úsala directo, no preguntes.
 - Si el nicho tiene VARIAS palabras: NO corras todavía. Propón 2-3 hashtags que la gente sí usa (ej. de "recetas veganas fáciles" → `#recetasveganas`; de "agentes de IA" → `#inteligenciaartificial` o `#automatizacion`) y confirma con el usuario cuál usar. Una pregunta, opciones concretas, y corres con su elección.
@@ -128,38 +154,38 @@ Si el script termina con ❌, su mensaje ya dice qué pasó y qué hacer — tra
 ## PASO 3 — Clasificación (la haces TÚ, Claude, leyendo `best.json`)
 Para cada video: lee `transcript` + `caption` y determina:
 - **Tipo Contenido**: `educativo | storytelling | promo | reto/demo | motivacional | musica/baile`.
-- **Hook**: el gancho real de los primeros segundos, 1 frase clara.
+- **El gancho hablado**: la frase real con la que arranca el video, 1 línea clara.
 - **Idioma**: ISO (`en`, `es`, `pt`, …).
 
-**El gancho visual (los ojos del agente)**: cada video trae `thumb_file` — su portada, ya descargada en `data/thumbs/`. MÍRALA con la herramienta de leer archivos (Read muestra imágenes) y escribe el **Hook Visual** en 1 frase: qué se ve + el texto en pantalla si lo hay (ej. *"Talking head con terminal de fondo; texto grande: '5 CLAUDE CODE PLUGINS'"*). Si `thumb_file` es null, déjalo vacío. Las portadas pesan poco: míralas todas, ahí vive el gancho que detiene el scroll.
+**El gancho visual (los ojos del agente)**: cada video trae `thumb_file` — su portada, ya descargada en `data/thumbs/`. MÍRALA con la herramienta de leer archivos (Read muestra imágenes) y escribe el gancho visual en 1 frase: qué se ve + el texto en pantalla si lo hay (ej. *"Talking head con terminal de fondo; texto grande: '5 CLAUDE CODE PLUGINS'"*). Si `thumb_file` es null, déjalo vacío. Las portadas pesan poco: míralas todas, ahí vive lo que detiene el scroll.
 
-**Si `transcript` viene vacío** (el lector de audio falló en ese video): clasifícalo con el `caption` y la portada, y antepón `[SIN TRANSCRIPT]` al Hook para que se note en la tabla. Si ni el caption ni la portada alcanzan para saber de qué trata, no lo subas.
+**Si `transcript` viene vacío** (el lector de audio falló en ese video): clasifícalo con el `caption` y la portada, y antepón `[SIN AUDIO LEÍDO]` al gancho hablado para que se note en la tabla. Si ni el caption ni la portada alcanzan para saber de qué trata, no lo subas.
 
-**REGLA DE CALIDAD CRÍTICA**: el gate por wpm deja pasar **lyrics/música** (un rap a buen wpm parece habla). Si el transcript es letra de canción / sin contenido informativo o narrativo, clasifícalo `musica/baile`, antepón `[FILTRADO]` al Hook, y por default **NO lo subas** a la Lista (salvo que el usuario pida ver todo).
+**REGLA DE CALIDAD CRÍTICA**: el gate por wpm deja pasar **lyrics/música** (un rap a buen wpm parece habla). Si el transcript es letra de canción / sin contenido informativo o narrativo, clasifícalo `musica/baile`, antepón `[FILTRADO]` al gancho hablado, y por default **NO lo subas** a la Lista (salvo que el usuario pida ver todo).
 
 ## PASO 4 — Escribir **Lista de Videos con Data**
-`notion-create-pages` con `parent: {data_source_id: "<lista_ds de config>"}`. Una página por video (excluyendo música). Propiedades (nombres exactos):
-`Video` (title, ≤80 chars), `Plataforma` (select), `Nicho` (texto), `Autor`, `userDefined:URL`, `Views`, `Likes`, `Comentarios`, `Shares`, `Guardados`, `Seguidores`, `Ratio Alcance`, `Engagement Rate` (fracción 0–1), `Score Viralidad`, `Duracion (s)`, `WPM`, `Dias`, `Tipo Contenido` (select), `Idioma`, `Hook`, `Hook Visual` (lo que viste en la portada), `Audio`, `Transcript` (≤1200 chars), `date:Fecha Scrape:start` (hoy). Si la tabla del usuario es vieja y le falta alguna columna, omite esa propiedad sin quejarte.
-Mapeo desde `best.json`: `Views`←`views` · `Likes`←`likes` · `Comentarios`←`comments` · `Shares`←`shares` · `Guardados`←`saves` · `Seguidores`←`followers` · `Ratio Alcance`←`reach_ratio` · `Engagement Rate`←`eng_rate` · `Score Viralidad`←`vir_score` · `Duracion (s)`←`duration` (entero) · `WPM`←`wpm` · `Dias`←`age_days` (redondea a 1 decimal) · `Autor`←`author` · `userDefined:URL`←`url` · `Audio`←`music`. Si un campo viene `null` o en `0` porque la plataforma no lo da (shares/guardados fuera de TikTok, seguidores en IG), omite esa propiedad — mejor vacío que un cero que miente.
-Guarda los `page.id` que devuelve (para la relación del paso 5).
+`notion-create-pages` con `parent: {data_source_id: "<lista_ds de config>"}`. Una página por video (excluyendo música). Propiedades (nombres exactos del esquema):
+`Video` (title, ≤80 chars — recorta el `caption`; si viene vacío, usa autor + plataforma), `Plataforma` (select), `Puntaje Viral`, `Vistas`, `Gancho (lo que dice)`, `Gancho (lo que se ve)`, `Tipo Contenido` (select), `Vistas por Seguidor`, `Autor`, `Link`, `Interaccion %` (fracción 0–1), `Likes`, `Comentarios`, `Compartidos`, `Guardados`, `Seguidores`, `Duracion (s)`, `Antiguedad (dias)`, `Palabras por minuto`, `Idioma`, `Audio`, `Nicho` (texto), `Lo que se dice` (≤1200 chars), `date:Fecha de busqueda:start` (hoy). Si la tabla del usuario es de una versión anterior y le falta alguna columna (o usa los nombres viejos: `Views`, `Hook`, `Transcript`, `Fecha Scrape`…), usa los nombres que SÍ existan en su tabla y omite lo que no exista, sin quejarte.
+Mapeo desde `best.json`: `Vistas`←`views` · `Likes`←`likes` · `Comentarios`←`comments` · `Compartidos`←`shares` · `Guardados`←`saves` · `Seguidores`←`followers` · `Vistas por Seguidor`←`reach_ratio` · `Interaccion %`←`eng_rate` · `Puntaje Viral`←`vir_score` · `Duracion (s)`←`duration` (entero) · `Palabras por minuto`←`wpm` · `Antiguedad (dias)`←`age_days` (redondea a 1 decimal) · `Autor`←`author` · `Link`←`url` · `Audio`←`music` · `Gancho (lo que dice)`←tu gancho hablado del PASO 3 · `Gancho (lo que se ve)`←tu gancho visual · `Lo que se dice`←`transcript`. Si un campo viene `null` o en `0` porque la plataforma no lo da (compartidos/guardados fuera de TikTok, seguidores en IG), omite esa propiedad — mejor vacío que un cero que miente.
+Guarda el `id` **y el `url`** que devuelve cada página creada — el `url` es el que necesitas para la relación del paso 5. Usa el que devuelve la API tal cual; **nunca construyas URLs de Notion a mano**.
 
 ## PASO 5 — Generar y escribir **Ideas de Videos**
-Identifica los hooks/formatos ganadores y genera 4–6 ideas que TRASLADAN esas mecánicas al **nicho destino** (default: el mismo nicho, en el idioma y la marca del usuario).
+Identifica los ganchos/formatos ganadores y genera 4–6 ideas que TRASLADAN esas mecánicas al **nicho destino** (default: el mismo nicho, en el idioma y la marca del usuario).
 
-**Prioriza a los David**: los videos con `reach_ratio` alto (muchas más vistas que seguidores del autor) pesan MÁS como fuente de ideas que los de cuentas gigantes — su formato ganó por sí solo, no por la fama, y eso es lo replicable para el usuario. Cuando una idea venga de un David, dilo en `Por que funciona` (ej. *"hizo 669k views con solo 7,890 seguidores — el formato jala solo"*). `notion-create-pages` con `parent: {data_source_id: "<ideas_ds>"}`:
-`Idea` (title), `Nicho Destino` (texto), `Formato` (select), `Hook Propuesto`, `Angulo` (qué formato viral imita), `Por que funciona` (cita la métrica del original), `Basado en` (JSON array string con la URL de la página del video fuente del paso 4), `Estado`=`idea`, `date:Fecha:start`.
+**Prioriza a las cuentas chicas que la rompieron**: los videos con `reach_ratio` alto (muchas más vistas que seguidores tiene el autor) pesan MÁS como fuente de ideas que los de cuentas gigantes — su formato ganó por sí solo, no por la fama, y eso es lo replicable para el usuario. Cuando una idea venga de uno de esos, dilo en `Por que funciona` (ej. *"hizo 669k views con solo 7,890 seguidores — el formato jala solo"*). En Instagram `reach_ratio` siempre viene null (la plataforma no da seguidores) — no lo trates como señal negativa; simplemente no aplica. `notion-create-pages` con `parent: {data_source_id: "<ideas_ds>"}`:
+`Idea` (title), `Nicho Destino` (texto), `Formato` (select), `Hook Propuesto`, `Angulo` (qué formato viral imita), `Por que funciona` (cita la métrica del original), `Basado en` (JSON array string con la URL de la página del video fuente del paso 4 — la que devolvió la API), `Estado`=`idea`, `date:Fecha:start`.
 
 ## PASO 6 — Escribir **Análisis** (1 registro por corrida)
 `notion-create-pages` con `parent: {data_source_id: "<analisis_ds>"}`:
-`Analisis` (title, "<Nicho> — <fecha>"), `Nicho` (texto), `date:Fecha:start`, `Videos Analizados`, `Plataformas` (JSON array), `Hooks Comunes`, `Formatos que Funcionan`, `Patrones Clave` (incluye: los patrones VISUALES de las portadas — texto en pantalla, encuadre, qué se repite —, los **hashtags que acompañan a los ganadores** — cuenta los más comunes en el campo `hashtags` de `best.json` —, el **audio** — ¿sonido original o audios en tendencia? —, y cuántos ganadores fueron **David** con `reach_ratio` alto), `Insights y Recomendaciones` (accionable), `Oportunidad de Adaptacion`.
+`Analisis` (title, "<Nicho> — <fecha>"), `Nicho` (texto), `date:Fecha:start`, `Videos Analizados`, `Plataformas` (JSON array), `Hooks Comunes`, `Formatos que Funcionan`, `Patrones Clave` (incluye: los patrones VISUALES de las portadas — texto en pantalla, encuadre, qué se repite —, los **hashtags que acompañan a los ganadores** — cuenta los más comunes en el campo `hashtags` de `best.json` —, el **audio** — ¿sonido original o audios en tendencia? —, y cuántos ganadores salieron de **cuentas chicas** con `reach_ratio` alto), `Insights y Recomendaciones` (accionable), `Oportunidad de Adaptacion`.
 
 ## PASO 7 — El botín (el cierre de cada corrida)
 
 Cierra SIEMPRE con este formato, en este orden:
 
 1. **Los números**: encontrados → filtrados → de calidad.
-2. **El top 3** con score y una línea de por qué pegó cada uno.
-3. **Los 3 links** a sus tablas de Notion, ya llenas.
+2. **El top 3** con su puntaje y una línea de por qué pegó cada uno.
+3. **Los 3 links** a sus tablas de Notion, ya llenas. Usa las URLs que guardaste al crearlas; si no las tienes a la mano, búscalas con `notion-search` y usa el `url` que devuelva. Si no las encuentras, di los nombres de las tablas sin link — **jamás inventes una URL de Notion**.
 4. **El costo** aproximado de la corrida (Apify + Supadata suele ser < $0.50 USD).
 5. **La invitación.** Lee el link con `python3 {baseDir}/scripts/config.py get-cta` y cierra con:
 
@@ -171,10 +197,32 @@ Cierra SIEMPRE con este formato, en este orden:
 
 ---
 
+## Datos duros de las herramientas (para contestar sin inventar)
+
+Si el usuario pregunta algo que NO está aquí, dile la verdad — *"no lo sé de memoria, déjame revisarlo"* — y revísalo en la página del servicio. NUNCA inventes precios, límites ni políticas.
+
+**Apify** (los robots de búsqueda)
+- Plan gratis con crédito mensual que se renueva solo. **No pide tarjeta** para registrarse.
+- Una corrida de este agente gasta centavos de dólar de ese crédito, no dólares.
+- Si el crédito se acaba: la corrida se detiene con un mensaje claro y **no le cobran nada**. Saldo: https://console.apify.com/billing
+- Su llave vive en https://console.apify.com/settings/integrations — ahí puede borrarla o generar una nueva cuando quiera.
+
+**Supadata** (el lector de lo que se dice)
+- Plan gratis con un tope mensual de lecturas. **No pide tarjeta.**
+- Si se acaba: el agente sigue funcionando, solo filtra con más ruido (clasifica con el texto del post y la portada). No se rompe nada.
+- Llave y saldo: https://dash.supadata.ai/
+
+**Notion**
+- Gratis para uso personal. No hay llave: el permiso se quita cuando quiera desde la configuración de Notion o desde Settings → Connectors de Claude Code.
+
+**"¿Es seguro darte mi llave?"** — contesta exactamente esto: *"Tus llaves nunca salen de tu computadora. Las pegas en un archivo de tu disco, yo las paso a una carpeta privada que solo tu usuario puede abrir, y limpio el archivo. No se suben a ningún lado, no pasan por el chat, y no se guardan en la nube. Si un día quieres cortar el acceso, borras la llave en Apify o Supadata y queda muerta al instante."*
+
+**"¿Se pierde si cambio de computadora?"** — sí: las llaves viven en esta máquina. En otra hay que volver a pegarlas (2 minutos), pero las cuentas y las tablas de Notion siguen igual.
+
 ## Notas técnicas (lecciones horneadas — no repetir errores)
-- **TikTok**: `clockworks/tiktok-scraper` por **hashtag**. NO usar keyword search (otros actores fallan con error C098). NO usar el filtro de fecha del actor (estrangula a 1 resultado); filtrar fecha en post-proceso.
-- **YouTube**: `streamers/youtube-scraper`, `searchQueries` + `sortingOrder: views` + `dateFilter: month`.
-- **Instagram**: `apify/instagram-hashtag-scraper`, `resultsType: reels`.
+- **TikTok**: `clockworks~tiktok-scraper` por **hashtag**. NO usar keyword search (otros actores fallan con error C098). NO usar el filtro de fecha del actor (estrangula a 1 resultado); filtrar fecha en post-proceso.
+- **YouTube**: `streamers~youtube-scraper`, `searchQueries` + `sortingOrder: views` + `dateFilter: month`.
+- **Instagram**: `apify~instagram-hashtag-scraper`, `resultsType: reels`.
 - **Supadata**: requiere `User-Agent` de navegador (banea urllib default → 403). Caché en `data/transcripts.json`.
 - **Score de viralidad**: z-score por plataforma = 0.35·log(views) + 0.30·log(views/día) + 0.35·engagement_rate. NO comparar views crudos entre plataformas.
 - **Notion**: columnas de nicho = texto libre (cualquier nicho). `Plataforma`/`Tipo Contenido`/`Formato`/`Estado` son SELECT de opciones fijas. Fechas: forma expandida `date:<Columna>:start`.
