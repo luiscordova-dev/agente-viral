@@ -117,7 +117,11 @@ Notion no necesita llave — se conecta con el **conector** de Claude Code. Este
 3. ⚠️ **El paso traicionero**: al autorizar, Notion pregunta **qué páginas compartir**. Dile con todas sus letras: *"Cuando Notion te pregunte qué compartir, marca la página donde quieres tus tablas (o dale acceso a todo tu espacio). Si no marcas ninguna, quedo ciego y nada va a funcionar."*
 4. **Checkpoint de conexión** (antes de crear nada): busca una página suya con el conector (ej. `notion-search`). Si la ves, dile **"✅ Ya veo tu Notion."** Si no ves nada, el conector no tiene acceso — pídele captura de la pantalla de permisos de Notion y repite el paso 3.
 5. **Si el conector no aparece por ningún lado**: no lo dejes colgado. Dile que su versión de Claude Code quizá no lo trae, ofrécele actualizar Claude Code — y mientras, entrégale los resultados en un archivo en su computadora para que no se vaya con las manos vacías.
-6. Pregunta bajo qué página de Notion quiere sus tablas (o en la raíz). Crea ahí la página madre "🔥 Agente Viral" con `notion-create-pages`, y como CONTENIDO de esa página escribe la guía de lectura completa que vive en `{baseDir}/reference/guia_lectura.md` (es markdown listo para Notion). **Sustituye `{CTA_URL}` del final por el link real** — sácalo con `python3 {baseDir}/scripts/config.py get-cta`. Así el usuario tiene arriba de sus tablas la explicación de qué es cada columna y cómo usarla.
+6. Pregunta bajo qué página de Notion quiere sus tablas (o en la raíz). Crea ahí la página madre "🔥 Agente Viral" con `notion-create-pages`, y como CONTENIDO de esa página escribe como CONTENIDO la guía de lectura que te da este comando —ya trae el link puesto, pégala tal cual:
+```bash
+python3 {baseDir}/scripts/config.py guia
+```
+⚠️ Después de publicarla, léela de vuelta en Notion: si aparece el texto `{CTA_URL}` literal, corrígelo con el link real. Un placeholder no truena, se publica — y se queda ahí semanas. Así el usuario tiene arriba de sus tablas la explicación de qué es cada columna y cómo usarla.
 7. Lee los 3 esquemas en `{baseDir}/reference/notion_schema.md` y crea las tablas DENTRO de esa página madre con `notion-create-database` **en este orden**: Lista → (toma su `data_source_id`) → Ideas (mete ese id en la RELATION `Basado en`, sustituyendo `<LISTA_DS>`) → Análisis.
 8. Guarda los ids **y las URLs**. Los ids van al config; las URLs tómalas del campo `url` que devuelve `notion-create-database` — **nunca armes una URL de Notion a mano**. Para reencontrarlas después, búscalas con `notion-search`.
 ```bash

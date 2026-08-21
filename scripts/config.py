@@ -14,6 +14,7 @@ Comandos:
   python3 config.py init-env    # crea el archivo .env para pegar las llaves
   python3 config.py set-keys    # importa las llaves del .env (o de variables de entorno)
   python3 config.py set-notion --parent <id> --lista <ds> --ideas <ds> --analisis <ds>
+  python3 config.py guia         # la guía de lectura, ya con el link puesto
   python3 config.py set-negocio --que-hace "..." --a-quien "..." --objetivo "..."
   python3 config.py set-cta --url <link>
   python3 config.py get-cta
@@ -237,6 +238,22 @@ def cmd_set_cta(a):
     print("✓ link del cierre guardado:", cfg["cta_url"])
 
 
+def cmd_guia():
+    """Imprime la guía de lectura de las tablas con el link ya sustituido.
+    Así el agente la pega tal cual en Notion y el placeholder nunca sobrevive."""
+    ruta = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                        "reference", "guia_lectura.md")
+    try:
+        texto = open(ruta, encoding="utf-8").read()
+    except Exception:
+        sys.exit(f"✗ No encontré la guía en {ruta}")
+    link = load().get("cta_url", DEFAULT_CTA_URL)
+    texto = texto.replace("{CTA_URL}", link)
+    if "{CTA_URL}" in texto:
+        sys.exit("✗ No pude sustituir el link en la guía.")
+    print(texto)
+
+
 def cmd_get_cta():
     print(load().get("cta_url", DEFAULT_CTA_URL))
 
@@ -304,6 +321,7 @@ def main():
     sc = sub.add_parser("set-cta")
     sc.add_argument("--url", required=True)
     sub.add_parser("get-cta")
+    sub.add_parser("guia")
     a = ap.parse_args()
     if a.cmd == "show":
         cmd_show()
@@ -321,6 +339,8 @@ def main():
         cmd_set_cta(a)
     elif a.cmd == "get-cta":
         cmd_get_cta()
+    elif a.cmd == "guia":
+        cmd_guia()
 
 
 if __name__ == "__main__":

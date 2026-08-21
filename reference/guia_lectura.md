@@ -39,5 +39,5 @@ Una fila = el resumen de una búsqueda completa. Léela ANTES de elegir qué gra
 
 ---
 
-Este agente corre en tu computadora, cuando tú lo abres.
+Tu agente corre en tu computadora. Trabaja cuando tú lo abres.
 ¿Quieres uno que trabaje aunque tú no estés? → {CTA_URL}

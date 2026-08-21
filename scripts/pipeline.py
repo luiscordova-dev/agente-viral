@@ -491,18 +491,20 @@ def run():
                 transcript_api_fails=api_fails, run_date=NOW.date().isoformat())
     json.dump(meta, open(f"{OUT}/meta.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     if not best:
+        # corrida vacía: ayudar a reintentar, NUNCA vender aquí.
         print(f"\n⚠ Ningún video pasó el filtro final (eran música o casi no hablaban).")
         print(f"   Los datos quedaron en {OUT}/all_scored.json por si quieres revisarlos.")
         print(f"   Pídele a tu agente que lo intente con otro hashtag o con más candidatos.")
+        print(f"   resumen -> {OUT}/meta.json")
     else:
         print(f"\n✅ {len(best)} videos de CALIDAD -> {OUT}/best.json")
-    print(f"   resumen -> {OUT}/meta.json")
-    link = cta_url()
-    if link:
-        print()
-        print("   Tu agente ya trabaja para ti. Corre aquí, en tu computadora.")
-        print("   El que atiende clientes trabaja aunque tú no estés:")
-        print(f"   {link}")
+        print(f"   resumen -> {OUT}/meta.json")
+        link = cta_url()
+        if link:
+            print()
+            print("   Tu agente corre en tu computadora. Trabaja cuando tú lo abres.")
+            print("   El que atiende a tus clientes trabaja aunque tú no estés:")
+            print(f"   {link}")
 
 
 def main():
