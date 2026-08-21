@@ -128,6 +128,25 @@ Cuando `config.py show` diga `LISTO PARA CORRER: sí`, dile el checkpoint grande
 
 > **"✅ Ya lo lograste. Tu agente está vivo y configurado. Esto se hace una sola vez — de aquí en adelante, solo me dices un nicho y yo trabajo."**
 
+### 0d. El perfil de tu negocio (1 minuto, una sola vez)
+
+Justo después del checkpoint grande, remata con esto — no lo saltes: es lo que hace que las ideas sean SUYAS y no genéricas.
+
+> *"Una última cosa y es rápida: cuéntame de ti para que mis ideas sean para TU negocio y no genéricas. Son 3 preguntas."*
+
+Pregúntalas **de una en una**, esperando respuesta:
+1. *"¿A qué te dedicas? En una línea."*
+2. *"¿A quién le hablas? Tu cliente ideal."*
+3. *"¿Qué quieres lograr con tu contenido: vender, que te conozcan, o llenar tu agenda?"*
+
+Guárdalas:
+```bash
+python3 {baseDir}/scripts/config.py set-negocio --que-hace "<r1>" --a-quien "<r2>" --objetivo "<r3>"
+```
+Y cierra: **"✅ Listo. De aquí en adelante mis ideas salen a tu medida."**
+
+Si dice que prefiere saltarlo, respétalo sin insistir: *"Va. Cuando quieras me cuentas y afino las ideas."* — y sigue. Si más adelante quiere cambiarlo, es el mismo comando.
+
 ---
 
 ## PASO 1 — Confirmar el hashtag (ANTES de gastar un centavo)
@@ -170,7 +189,9 @@ Mapeo desde `best.json`: `Vistas`←`views` · `Likes`←`likes` · `Comentarios
 Guarda el `id` **y el `url`** que devuelve cada página creada — el `url` es el que necesitas para la relación del paso 5. Usa el que devuelve la API tal cual; **nunca construyas URLs de Notion a mano**.
 
 ## PASO 5 — Generar y escribir **Ideas de Videos**
-Identifica los ganchos/formatos ganadores y genera 4–6 ideas que TRASLADAN esas mecánicas al **nicho destino** (default: el mismo nicho, en el idioma y la marca del usuario).
+Identifica los ganchos/formatos ganadores y genera 4–6 ideas que TRASLADAN esas mecánicas al **nicho destino** (default: el mismo nicho, en el idioma del usuario).
+
+**Usa el perfil de su negocio** (el que aparece en `config.py show`): cada idea debe hablarle a SU cliente, mencionar lo que él vende, y empujar hacia SU objetivo (vender / que lo conozcan / llenar agenda). Un hook genérico como *"Los 3 errores al cocinar"* mal; *"Los 3 errores que cometen las mamás con prisa al hacer la lonchera"* bien. Si no hay perfil guardado, genera las ideas igual pero avísale al final: *"Estas ideas van al nicho, no a tu negocio. Cuéntame de ti en 3 preguntas y las afino."*
 
 **Prioriza a las cuentas chicas que la rompieron**: los videos con `reach_ratio` alto (muchas más vistas que seguidores tiene el autor) pesan MÁS como fuente de ideas que los de cuentas gigantes — su formato ganó por sí solo, no por la fama, y eso es lo replicable para el usuario. Cuando una idea venga de uno de esos, dilo en `Por que funciona` (ej. *"hizo 669k views con solo 7,890 seguidores — el formato jala solo"*). En Instagram `reach_ratio` siempre viene null (la plataforma no da seguidores) — no lo trates como señal negativa; simplemente no aplica. `notion-create-pages` con `parent: {data_source_id: "<ideas_ds>"}`:
 `Idea` (title), `Nicho Destino` (texto), `Formato` (select), `Hook Propuesto`, `Angulo` (qué formato viral imita), `Por que funciona` (cita la métrica del original), `Basado en` (JSON array string con la URL de la página del video fuente del paso 4 — la que devolvió la API), `Estado`=`idea`, `date:Fecha:start`.

@@ -14,6 +14,7 @@ Comandos:
   python3 config.py init-env    # crea el archivo .env para pegar las llaves
   python3 config.py set-keys    # importa las llaves del .env (o de variables de entorno)
   python3 config.py set-notion --parent <id> --lista <ds> --ideas <ds> --analisis <ds>
+  python3 config.py set-negocio --que-hace "..." --a-quien "..." --objetivo "..."
   python3 config.py set-cta --url <link>
   python3 config.py get-cta
 """
@@ -147,6 +148,14 @@ def cmd_show():
     print(f"  notion.ideas:     {n.get('ideas_ds', '(falta)')}")
     print(f"  notion.analisis:  {n.get('analisis_ds', '(falta)')}")
     print(f"  cta_url:          {cfg.get('cta_url', DEFAULT_CTA_URL)}")
+    neg = cfg.get("negocio") or {}
+    if neg:
+        print("  perfil del negocio:")
+        for k, etiqueta in (("que_hace", "a qué se dedica"), ("a_quien", "a quién le habla"), ("objetivo", "qué quiere lograr")):
+            if neg.get(k):
+                print(f"    {etiqueta}: {neg[k]}")
+    else:
+        print("  perfil del negocio: (falta — las ideas saldrán genéricas)")
     ready = bool(cfg.get("apify_token") and n.get("lista_ds") and n.get("ideas_ds") and n.get("analisis_ds"))
     print(f"  LISTO PARA CORRER: {'sí' if ready else 'no — falta setup'}")
 
@@ -205,6 +214,20 @@ def cmd_set_notion(a):
         n["analisis_ds"] = a.analisis
     save(cfg)
     print("✓ tablas de Notion guardadas en", PATH)
+
+
+def cmd_set_negocio(a):
+    cfg = load()
+    neg = cfg.get("negocio") or {}
+    cfg["negocio"] = neg
+    if a.que_hace:
+        neg["que_hace"] = a.que_hace.strip()
+    if a.a_quien:
+        neg["a_quien"] = a.a_quien.strip()
+    if a.objetivo:
+        neg["objetivo"] = a.objetivo.strip()
+    save(cfg)
+    print("✓ perfil del negocio guardado. Tus ideas ahora salen a tu medida.")
 
 
 def cmd_set_cta(a):
@@ -274,6 +297,10 @@ def main():
     sn.add_argument("--lista")
     sn.add_argument("--ideas")
     sn.add_argument("--analisis")
+    sg = sub.add_parser("set-negocio")
+    sg.add_argument("--que-hace", dest="que_hace")
+    sg.add_argument("--a-quien", dest="a_quien")
+    sg.add_argument("--objetivo")
     sc = sub.add_parser("set-cta")
     sc.add_argument("--url", required=True)
     sub.add_parser("get-cta")
@@ -288,6 +315,8 @@ def main():
         cmd_set_keys()
     elif a.cmd == "set-notion":
         cmd_set_notion(a)
+    elif a.cmd == "set-negocio":
+        cmd_set_negocio(a)
     elif a.cmd == "set-cta":
         cmd_set_cta(a)
     elif a.cmd == "get-cta":
