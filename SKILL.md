@@ -139,17 +139,19 @@ Para cada video: lee `transcript` + `caption` y determina:
 
 ## PASO 4 — Escribir **Lista de Videos con Data**
 `notion-create-pages` con `parent: {data_source_id: "<lista_ds de config>"}`. Una página por video (excluyendo música). Propiedades (nombres exactos):
-`Video` (title, ≤80 chars), `Plataforma` (select), `Nicho` (texto), `Autor`, `userDefined:URL`, `Views`, `Likes`, `Comentarios`, `Engagement Rate` (fracción 0–1), `Score Viralidad`, `Duracion (s)`, `WPM`, `Dias`, `Tipo Contenido` (select), `Idioma`, `Hook`, `Hook Visual` (lo que viste en la portada; si la tabla del usuario es vieja y no tiene esta columna, omítela sin quejarte), `Transcript` (≤1200 chars), `date:Fecha Scrape:start` (hoy).
-Mapeo desde `best.json`: `Views`←`views` · `Likes`←`likes` · `Comentarios`←`comments` · `Engagement Rate`←`eng_rate` · `Score Viralidad`←`vir_score` · `Duracion (s)`←`duration` (entero) · `WPM`←`wpm` · `Dias`←`age_days` (redondea a 1 decimal) · `Autor`←`author` · `userDefined:URL`←`url`.
+`Video` (title, ≤80 chars), `Plataforma` (select), `Nicho` (texto), `Autor`, `userDefined:URL`, `Views`, `Likes`, `Comentarios`, `Shares`, `Guardados`, `Seguidores`, `Ratio Alcance`, `Engagement Rate` (fracción 0–1), `Score Viralidad`, `Duracion (s)`, `WPM`, `Dias`, `Tipo Contenido` (select), `Idioma`, `Hook`, `Hook Visual` (lo que viste en la portada), `Audio`, `Transcript` (≤1200 chars), `date:Fecha Scrape:start` (hoy). Si la tabla del usuario es vieja y le falta alguna columna, omite esa propiedad sin quejarte.
+Mapeo desde `best.json`: `Views`←`views` · `Likes`←`likes` · `Comentarios`←`comments` · `Shares`←`shares` · `Guardados`←`saves` · `Seguidores`←`followers` · `Ratio Alcance`←`reach_ratio` · `Engagement Rate`←`eng_rate` · `Score Viralidad`←`vir_score` · `Duracion (s)`←`duration` (entero) · `WPM`←`wpm` · `Dias`←`age_days` (redondea a 1 decimal) · `Autor`←`author` · `userDefined:URL`←`url` · `Audio`←`music`. Si un campo viene `null` o en `0` porque la plataforma no lo da (shares/guardados fuera de TikTok, seguidores en IG), omite esa propiedad — mejor vacío que un cero que miente.
 Guarda los `page.id` que devuelve (para la relación del paso 5).
 
 ## PASO 5 — Generar y escribir **Ideas de Videos**
-Identifica los hooks/formatos ganadores y genera 4–6 ideas que TRASLADAN esas mecánicas al **nicho destino** (default: el mismo nicho, en el idioma y la marca del usuario). `notion-create-pages` con `parent: {data_source_id: "<ideas_ds>"}`:
+Identifica los hooks/formatos ganadores y genera 4–6 ideas que TRASLADAN esas mecánicas al **nicho destino** (default: el mismo nicho, en el idioma y la marca del usuario).
+
+**Prioriza a los David**: los videos con `reach_ratio` alto (muchas más vistas que seguidores del autor) pesan MÁS como fuente de ideas que los de cuentas gigantes — su formato ganó por sí solo, no por la fama, y eso es lo replicable para el usuario. Cuando una idea venga de un David, dilo en `Por que funciona` (ej. *"hizo 669k views con solo 7,890 seguidores — el formato jala solo"*). `notion-create-pages` con `parent: {data_source_id: "<ideas_ds>"}`:
 `Idea` (title), `Nicho Destino` (texto), `Formato` (select), `Hook Propuesto`, `Angulo` (qué formato viral imita), `Por que funciona` (cita la métrica del original), `Basado en` (JSON array string con la URL de la página del video fuente del paso 4), `Estado`=`idea`, `date:Fecha:start`.
 
 ## PASO 6 — Escribir **Análisis** (1 registro por corrida)
 `notion-create-pages` con `parent: {data_source_id: "<analisis_ds>"}`:
-`Analisis` (title, "<Nicho> — <fecha>"), `Nicho` (texto), `date:Fecha:start`, `Videos Analizados`, `Plataformas` (JSON array), `Hooks Comunes`, `Formatos que Funcionan`, `Patrones Clave` (incluye aquí los patrones VISUALES que viste en las portadas: texto en pantalla, encuadre, qué se repite entre los ganadores), `Insights y Recomendaciones` (accionable), `Oportunidad de Adaptacion`.
+`Analisis` (title, "<Nicho> — <fecha>"), `Nicho` (texto), `date:Fecha:start`, `Videos Analizados`, `Plataformas` (JSON array), `Hooks Comunes`, `Formatos que Funcionan`, `Patrones Clave` (incluye: los patrones VISUALES de las portadas — texto en pantalla, encuadre, qué se repite —, los **hashtags que acompañan a los ganadores** — cuenta los más comunes en el campo `hashtags` de `best.json` —, el **audio** — ¿sonido original o audios en tendencia? —, y cuántos ganadores fueron **David** con `reach_ratio` alto), `Insights y Recomendaciones` (accionable), `Oportunidad de Adaptacion`.
 
 ## PASO 7 — El botín (el cierre de cada corrida)
 

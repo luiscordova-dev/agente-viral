@@ -24,6 +24,10 @@ CREATE TABLE (
 "Views" NUMBER,
 "Likes" NUMBER,
 "Comentarios" NUMBER,
+"Shares" NUMBER,
+"Guardados" NUMBER COMMENT 'la señal de valor: la gente guarda lo que piensa usar',
+"Seguidores" NUMBER COMMENT 'seguidores del autor al momento del scrape',
+"Ratio Alcance" NUMBER COMMENT 'views ÷ seguidores. Alto = el formato gano, no la fama (un David)',
 "Engagement Rate" NUMBER FORMAT 'percent',
 "Score Viralidad" NUMBER COMMENT 'z-score normalizado por plataforma',
 "Duracion (s)" NUMBER,
@@ -33,6 +37,7 @@ CREATE TABLE (
 "Idioma" RICH_TEXT,
 "Hook" RICH_TEXT COMMENT 'gancho de los primeros segundos',
 "Hook Visual" RICH_TEXT COMMENT 'que se ve en la portada + el texto en pantalla',
+"Audio" RICH_TEXT COMMENT 'que musica/sonido usa (TikTok e IG lo traen)',
 "Transcript" RICH_TEXT,
 "Fecha Scrape" DATE
 )

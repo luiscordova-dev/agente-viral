@@ -173,6 +173,22 @@ def parse_hms(s):
     return p[0] * 3600 + p[1] * 60 + p[2]
 
 
+def _music(m):
+    """Describe el audio de un reel de IG: nombre — autor (+ si es original)."""
+    if not isinstance(m, dict) or not m.get("song_name"):
+        return None
+    s = f"{m['song_name']} — {m.get('artist_name', '')}".strip(" —")
+    return s + (" (original)" if m.get("uses_original_audio") else "")
+
+
+def _music_tk(m):
+    """Lo mismo para TikTok (musicMeta usa otras llaves)."""
+    if not isinstance(m, dict) or not m.get("musicName"):
+        return None
+    s = f"{m['musicName']} — {m.get('musicAuthor', '')}".strip(" —")
+    return s + (" (original)" if m.get("musicOriginal") else "")
+
+
 def _tag(h):
     """Saca el nombre de un hashtag venga como venga (dict, string, null)."""
     if isinstance(h, dict):
@@ -191,7 +207,9 @@ def norm(plat, it):
             created=it.get("createTimeISO"), lang=it.get("textLanguage"),
             is_slideshow=bool(it.get("isSlideshow")), is_muted=bool(it.get("isMuted")),
             is_ad=bool(it.get("isAd") or it.get("isSponsored")),
-            thumb=(it.get("videoMeta") or {}).get("coverUrl"))
+            thumb=(it.get("videoMeta") or {}).get("coverUrl"),
+            followers=(it.get("authorMeta") or {}).get("fans"),
+            music=_music_tk(it.get("musicMeta")))
     if plat == "youtube":
         return dict(platform="youtube", id=str(it.get("id")), url=it.get("url"),
             author=it.get("channelName"),
@@ -201,7 +219,8 @@ def norm(plat, it):
             comments=it.get("commentsCount") or 0, shares=0, saves=0,
             duration=parse_hms(it.get("duration")), created=it.get("date"), lang=None,
             is_slideshow=False, is_muted=False, is_ad=bool(it.get("isPaidContent")),
-            thumb=it.get("thumbnailUrl"))
+            thumb=it.get("thumbnailUrl"),
+            followers=it.get("numberOfSubscribers"), music=None)
     if plat == "instagram":
         return dict(platform="instagram", id=str(it.get("id")), url=it.get("url"),
             author=it.get("ownerUsername"), caption=it.get("caption") or "",
@@ -210,8 +229,11 @@ def norm(plat, it):
             likes=it.get("likesCount") or 0, comments=it.get("commentsCount") or 0,
             shares=0, saves=0, duration=it.get("videoDuration"),
             created=it.get("timestamp"), lang=None,
-            is_slideshow=(it.get("type") != "Video"), is_muted=False, is_ad=False,
-            thumb=it.get("displayUrl"))
+            is_slideshow=(it.get("type") != "Video"), is_muted=False,
+            is_ad=bool(it.get("paidPartnership") or it.get("isSponsored")),
+            thumb=it.get("displayUrl"),
+            followers=None,  # el scraper de hashtags de IG no trae seguidores
+            music=_music(it.get("musicInfo")))
 
 
 MEME_MARKERS = {"meme", "memes", "funny", "comedy", "fail", "lol", "joke", "prank", "shitpost", "ratio"}
@@ -383,6 +405,9 @@ def run():
         ad = age_days(r["created"])
         r["age_days"] = ad
         r["views_per_day"] = r["views"] / ad if ad else 0
+        # el factor David: cuántas vistas por cada seguidor del autor.
+        # Alto = el FORMATO ganó, no la fama del autor -> replicable.
+        r["reach_ratio"] = round(r["views"] / r["followers"], 1) if r.get("followers") else None
         r["reject_reasons"] = quality_check(r)
         r["passed_prefilter"] = not r["reject_reasons"]
     for plat in plats:
