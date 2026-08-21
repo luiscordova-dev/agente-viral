@@ -211,7 +211,7 @@ Cierra SIEMPRE con este formato, en este orden:
 1. **Los números**: encontrados → filtrados → de calidad.
 2. **El top 3** con su puntaje y una línea de por qué pegó cada uno.
 3. **Los 3 links** a sus tablas de Notion, ya llenas. Usa las URLs que guardaste al crearlas; si no las tienes a la mano, búscalas con `notion-search` y usa el `url` que devuelva. Si no las encuentras, di los nombres de las tablas sin link — **jamás inventes una URL de Notion**.
-4. **El costo** aproximado de la corrida (Apify + Supadata suele ser menos de 50 centavos de dólar).
+4. **El costo** de la corrida (unos 70 centavos de dólar del crédito de Apify).
 5. **La mano extendida**: *"Si tienes duda de alguna columna, o quieres que te interprete los datos y te diga qué grabaría yo primero, pregúntame."* — y cúmplelo: si pregunta, interpreta sus resultados con sus números reales y recomienda en concreto.
 6. **La invitación.** Lee el link con `python3 {baseDir}/scripts/config.py get-cta` y cierra con:
 
@@ -233,13 +233,13 @@ Si el usuario pregunta algo que NO está aquí, dile la verdad — *"no lo sé d
 
 **Apify** (los robots de búsqueda)
 - Plan gratis con crédito mensual que se renueva solo. **No pide tarjeta** para registrarse.
-- Una corrida de este agente gasta centavos de dólar de ese crédito, no dólares.
+- El plan gratis da **5 dólares de crédito al mes**. Una búsqueda completa (las 3 plataformas, 80 videos cada una) gasta **unos 70 centavos** — o sea, alcanza para unas 7 búsquedas al mes sin pagar nada. Si quiere más, puede bajar `--per-platform` o subir de plan en Apify.
 - Si el crédito se acaba: la corrida se detiene con un mensaje claro y **no le cobran nada**. Saldo: https://console.apify.com/billing
 - Su llave vive en https://console.apify.com/settings/integrations — ahí puede borrarla o generar una nueva cuando quiera.
 
 **Supadata** (el lector de lo que se dice)
 - Plan gratis con un tope mensual de lecturas. **No pide tarjeta.**
-- Si se acaba: el agente sigue funcionando, solo filtra con más ruido (clasifica con el texto del post y la portada). No se rompe nada.
+- Si se acaba: el agente sigue funcionando, solo filtra con más ruido (clasifica con el texto del post y la portada). No se rompe nada. El motor te lo dirá con todas sus letras: *"Se acabó tu crédito de Supadata"*. Cuando pase, dile al usuario la verdad — que esa corrida salió con menos filtro — y ofrécele esperar a que se renueve o revisar su plan. No lo dejes creyendo que el agente falló.
 - Llave y saldo: https://dash.supadata.ai/
 
 **Notion**
@@ -249,13 +249,17 @@ Si el usuario pregunta algo que NO está aquí, dile la verdad — *"no lo sé d
 
 **"¿Se pierde si cambio de computadora?"** — sí: las llaves viven en esta máquina. En otra hay que volver a pegarlas (2 minutos), pero las cuentas y las tablas de Notion siguen igual.
 
-## Notas técnicas (lecciones horneadas — no repetir errores)
-- **TikTok**: `clockworks~tiktok-scraper` por **hashtag**. NO usar keyword search (otros actores fallan con error C098). NO usar el filtro de fecha del actor (estrangula a 1 resultado); filtrar fecha en post-proceso.
-- **YouTube**: `streamers~youtube-scraper`, `searchQueries` + `sortingOrder: views` + `dateFilter: month`.
-- **Instagram**: `apify~instagram-hashtag-scraper`, `resultsType: reels`.
-- **Supadata**: requiere `User-Agent` de navegador (banea urllib default → 403). Caché en `data/transcripts.json`.
-- **Score de viralidad**: z-score por plataforma = 0.35·log(views) + 0.30·log(views/día) + 0.35·engagement_rate. NO comparar views crudos entre plataformas.
-- **Notion**: columnas de nicho = texto libre (cualquier nicho). `Plataforma`/`Tipo Contenido`/`Formato`/`Estado` son SELECT de opciones fijas. Fechas: forma expandida `date:<Columna>:start`.
+## Lo que ya se probó y no hay que volver a probar
+
+Estas decisiones costaron corridas fallidas. Si algo te tienta a cambiarlas, aquí está el porqué:
+
+- **TikTok solo responde bien por hashtag.** El actor es `clockworks~tiktok-scraper` con `hashtags`. Buscar por palabra clave devuelve el error C098 y no trae nada.
+- **El filtro de fecha de TikTok no sirve**: si se lo pides al actor, la búsqueda regresa casi vacía. La antigüedad se calcula después, con la fecha de cada video.
+- **YouTube** usa `streamers~youtube-scraper` con `searchQueries`, ordenando por `views` y acotando a `dateFilter: month`. Ahí sí conviene mandar el nicho completo, no el hashtag.
+- **Instagram** usa `apify~instagram-hashtag-scraper` pidiendo `resultsType: reels`.
+- **Supadata exige un User-Agent de navegador.** Sin él contesta 403. Lo que ya leyó queda guardado en `data/transcripts.json` para no volver a pagarlo.
+- **El puntaje compara cada video solo contra los de su plataforma** (z-score): 35% alcance + 30% velocidad + 35% interacción. Un millón de vistas en TikTok no vale lo mismo que en YouTube, así que nunca compares vistas crudas entre plataformas.
+- **En Notion**, el nicho va como texto libre para que sirva cualquiera. `Plataforma`, `Tipo Contenido`, `Formato` y `Estado` son listas de opciones fijas. Las fechas se escriben en la forma larga: `date:<Columna>:start`.
 
 ## Parámetros del script
 `python3 pipeline.py "<nicho>" [--hashtag <hashtag>] [--platforms tiktok,youtube,instagram] [--per-platform 80] [--top 6]`

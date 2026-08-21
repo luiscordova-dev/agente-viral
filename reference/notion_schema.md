@@ -1,17 +1,18 @@
-# Esquemas de Notion (para crear las tablas en el setup)
+# Las 3 tablas — cómo se arman
 
-En el primer uso, Claude crea estas 3 tablas en el Notion del usuario (bajo la página
-padre que el usuario elija, o en la raíz del workspace) usando el MCP de Notion
-(`notion-create-database`), y guarda los `data_source_id` resultantes con:
+Esto es el plano de las tablas que el agente construye en el Notion del usuario, una
+sola vez, con `notion-create-database`. Al crearlas devuelve un `data_source_id` por
+tabla; esos identificadores se guardan con:
 
 ```
 python3 scripts/config.py set-notion --parent <PARENT_PAGE_ID> --lista <DS> --ideas <DS> --analisis <DS>
 ```
 
-Crea **primero** la tabla Lista (las Ideas se relacionan a ella vía su `data_source_id`).
+⚠️ **La Lista va primero.** La tabla de Ideas apunta a ella, así que necesita su
+identificador para poder crearse.
 
-El orden de las columnas es deliberado: lo que el usuario quiere ver primero
-(puntaje, ganchos, tipo) al frente; los números crudos y lo técnico al fondo.
+El orden de las columnas no es casual: adelante lo que el usuario quiere ver de un
+vistazo (puntaje, ganchos, tipo), atrás los números finos y lo técnico.
 
 ---
 
@@ -82,10 +83,11 @@ CREATE TABLE (
 
 ---
 
-## Notas para escribir filas (create-pages)
-- Parent: `{type:"data_source_id", data_source_id:"<DS>"}`.
-- Las fechas usan la forma expandida: `date:Fecha de busqueda:start`, `date:Fecha:start`.
-- `Interaccion %` se guarda como fracción 0–1 (ej. 0.229 = 22.9%).
-- `Basado en` (relación) se pasa como string JSON array con la URL de página que devolvió la API al crearla: `["<url tal cual la devolvió Notion>"]`. Nunca armes la URL a mano.
-- `Plataformas` (multi-select) se pasa como string JSON array: `["tiktok","youtube"]`.
-- Tablas de versiones anteriores usan nombres viejos (`Views`, `Hook`, `Transcript`, `URL` — que se referencia `userDefined:URL` —, `Fecha Scrape`): usa los nombres que existan en la tabla del usuario y omite lo que no exista.
+## Al escribir cada fila
+
+- El padre de la página va como `{type:"data_source_id", data_source_id:"<DS>"}`.
+- Las fechas necesitan la forma larga, no basta el nombre de la columna: `date:Fecha de busqueda:start`, `date:Fecha:start`.
+- `Interaccion %` se guarda como fracción, no como porcentaje: 0.229 significa 22.9%.
+- `Basado en` (la relación) se manda como texto con un arreglo JSON que contiene la URL que Notion devolvió al crear esa página: `["<url tal cual la devolvió la API>"]`. Nunca la armes tú desde el identificador.
+- `Plataformas` (opciones múltiples) también va como texto con arreglo JSON: `["tiktok","youtube"]`.
+- Si el usuario trae tablas de una versión anterior, sus columnas se llaman distinto (`Views`, `Hook`, `Transcript`, `URL` —que se referencia `userDefined:URL`—, `Fecha Scrape`). Usa los nombres que existan en SU tabla y omite lo que no exista.

@@ -1,25 +1,32 @@
 #!/usr/bin/env python3
 """
-AGENTE VIRAL — el motor del pipeline, de punta a punta.
-Uso:  python3 pipeline.py "<nicho>" [--hashtag <hashtag>] [--platforms tiktok,youtube,instagram] [--per-platform 80] [--top 6]
+AGENTE VIRAL — el motor.
 
-Hace: scrape (Apify) -> filtro basura -> score viralidad -> gate calidad por
-transcript (Supadata) -> escribe data/best.json + data/meta.json
+Qué hace, en orden:
+  1. Lanza tres búsquedas en Apify (TikTok, YouTube, Instagram) y espera a que terminen.
+  2. Traduce lo que devuelve cada una a un formato común.
+  3. Descarta lo que no es contenido: fotos, mudos, anuncios, muy corto, muy largo, sin alcance.
+  4. Puntúa qué tan viral es cada video COMPARÁNDOLO CONTRA SU PROPIA PLATAFORMA.
+  5. De los mejores de cada plataforma, pide a Supadata lo que se dice en el video.
+  6. Baja la portada de los finalistas y escribe data/best.json + data/meta.json.
 
-Las capas de razonamiento (clasificar tipo/hook/idioma, generar ideas, análisis)
-y la escritura a Notion las hace el agente, leyendo best.json.
+El agente (Claude) toma esos archivos y hace lo que una máquina no puede: clasificar,
+mirar las portadas, escribir las ideas y llenar Notion.
 
-Credenciales (en este orden de prioridad):
- 1. variables de entorno  APIFY_TOKEN / SUPADATA_API_KEY
- 2. ~/.agente-viral/config.json  {"apify_token": "...", "supadata_api_key": "..."}
- 3. (respaldo) ~/.apify/auth.json del CLI de Apify  /  ~/.supadata.json
+De dónde salen las llaves, en este orden:
+  1. las variables de entorno APIFY_TOKEN y SUPADATA_API_KEY
+  2. ~/.agente-viral/config.json
+  3. lo que ya tengas del CLI de Apify (~/.apify/auth.json) o en ~/.supadata.json
 
-Notas técnicas (lecciones horneadas — no cambiar sin razón):
- - TikTok: usar clockworks por HASHTAG (el keyword search de otros actores falla).
- - TikTok: NO usar filtro de fecha del actor (estrangula el resultado); filtrar en post.
- - Supadata: requiere User-Agent de navegador (banea urllib default -> 403).
- - Nichos de varias palabras: TikTok/IG buscan por hashtag SIN espacios. Por eso
-   existe --hashtag: el nicho completo va a YouTube, el hashtag a TikTok/IG.
+Cosas que costó descubrir y no hay que volver a probar:
+  · TikTok solo responde bien buscando por hashtag; por palabra clave falla.
+  · El filtro de fecha del propio buscador de TikTok deja pasar casi nada: se filtra después.
+  · Supadata rechaza las peticiones sin User-Agent de navegador.
+  · Un nicho de varias palabras no sirve como hashtag; por eso --hashtag va aparte
+    del nicho: el nicho completo se usa en YouTube y el hashtag en TikTok e Instagram.
+
+Uso:
+  python3 pipeline.py "<nicho>" [--hashtag <hashtag>] [--platforms ...] [--per-platform 80] [--top 6]
 """
 import json, os, sys, time, math, re, statistics, argparse, datetime as dt
 import urllib.request, urllib.parse, urllib.error
@@ -168,87 +175,146 @@ def dataset(rid):
 
 
 # ---------------- normalización ----------------
-def age_days(iso):
+# Cada plataforma entrega su JSON con nombres distintos. En vez de escribir tres
+# veces el mismo dict a mano, aquí se declara DE DÓNDE sale cada dato y un solo
+# extractor recorre la tabla. Agregar una plataforma = agregar una entrada.
+
+def antiguedad_en_dias(marca_de_tiempo):
+    """Días transcurridos desde que se publicó. Mínimo 0.1 para no dividir entre cero."""
+    if not marca_de_tiempo:
+        return None
     try:
-        t = dt.datetime.fromisoformat(iso.replace("Z", "+00:00"))
-        return max((NOW - t).total_seconds() / 86400, 0.1)
+        publicado = dt.datetime.fromisoformat(str(marca_de_tiempo).replace("Z", "+00:00"))
     except Exception:
         return None
+    transcurrido = (NOW - publicado).total_seconds() / 86400
+    return transcurrido if transcurrido > 0.1 else 0.1
 
 
-def parse_hms(s):
-    if not s:
+def a_segundos(reloj):
+    """Convierte '1:23:45', '12:34' o '45' a segundos. None si no se puede leer."""
+    if not reloj:
         return None
+    partes = str(reloj).split(":")
     try:
-        p = [int(x) for x in str(s).split(":")]
+        numeros = [int(x) for x in partes]
     except ValueError:
         return None
-    while len(p) < 3:
-        p.insert(0, 0)
-    return p[0] * 3600 + p[1] * 60 + p[2]
+    total = 0
+    for n in numeros:                 # cada posición vale 60 veces más que la anterior
+        total = total * 60 + n
+    return total
 
 
-def _music(m):
-    """Describe el audio de un reel de IG: nombre — autor (+ si es original)."""
-    if not isinstance(m, dict) or not m.get("song_name"):
-        return None
-    s = f"{m['song_name']} — {m.get('artist_name', '')}".strip(" —")
-    return s + (" (original)" if m.get("uses_original_audio") else "")
-
-
-def _music_tk(m):
-    """Lo mismo para TikTok (musicMeta usa otras llaves)."""
-    if not isinstance(m, dict) or not m.get("musicName"):
-        return None
-    s = f"{m['musicName']} — {m.get('musicAuthor', '')}".strip(" —")
-    return s + (" (original)" if m.get("musicOriginal") else "")
-
-
-def _tag(h):
-    """Saca el nombre de un hashtag venga como venga (dict, string, null)."""
+def etiqueta(h):
+    """Un hashtag puede llegar como dict, como texto suelto o nulo. Sale en minúsculas."""
     if isinstance(h, dict):
-        return (h.get("name") or "").lower()
-    return str(h or "").lower().lstrip("#")
+        crudo = h.get("name") or ""
+    else:
+        crudo = str(h or "").lstrip("#")
+    return crudo.lower()
+
+
+def lista_de_etiquetas(bruto):
+    return [e for e in (etiqueta(h) for h in (bruto or [])) if e]
+
+
+def describir_audio(meta, llave_titulo, llave_autor, llave_original):
+    """Arma 'Título — Autor (original)'. Las llaves cambian según la plataforma."""
+    if not isinstance(meta, dict):
+        return None
+    titulo = meta.get(llave_titulo)
+    if not titulo:
+        return None
+    firma = f"{titulo} — {meta.get(llave_autor, '')}".strip(" —")
+    return firma + (" (original)" if meta.get(llave_original) else "")
+
+
+def _anidado(item, *ruta):
+    """Baja por llaves anidadas sin reventar si algún nivel viene nulo."""
+    actual = item
+    for llave in ruta:
+        if not isinstance(actual, dict):
+            return None
+        actual = actual.get(llave)
+    return actual
+
+
+# La tabla: campo destino -> función que lo saca del item crudo de esa plataforma.
+MAPEO = {
+    "tiktok": {
+        "id":           lambda i: str(i.get("id")),
+        "url":          lambda i: i.get("webVideoUrl"),
+        "author":       lambda i: _anidado(i, "authorMeta", "name"),
+        "caption":      lambda i: i.get("text") or "",
+        "hashtags":     lambda i: lista_de_etiquetas(i.get("hashtags")),
+        "views":        lambda i: i.get("playCount") or 0,
+        "likes":        lambda i: i.get("diggCount") or 0,
+        "comments":     lambda i: i.get("commentCount") or 0,
+        "shares":       lambda i: i.get("shareCount") or 0,
+        "saves":        lambda i: i.get("collectCount") or 0,
+        "duration":     lambda i: _anidado(i, "videoMeta", "duration"),
+        "created":      lambda i: i.get("createTimeISO"),
+        "lang":         lambda i: i.get("textLanguage"),
+        "is_slideshow": lambda i: bool(i.get("isSlideshow")),
+        "is_muted":     lambda i: bool(i.get("isMuted")),
+        "is_ad":        lambda i: bool(i.get("isAd") or i.get("isSponsored")),
+        "thumb":        lambda i: _anidado(i, "videoMeta", "coverUrl"),
+        "followers":    lambda i: _anidado(i, "authorMeta", "fans"),
+        "music":        lambda i: describir_audio(i.get("musicMeta"), "musicName", "musicAuthor", "musicOriginal"),
+    },
+    "youtube": {
+        "id":           lambda i: str(i.get("id")),
+        "url":          lambda i: i.get("url"),
+        "author":       lambda i: i.get("channelName"),
+        # el título manda; se le pega un pedazo de la descripción como contexto
+        "caption":      lambda i: (i.get("title") or "") + " — " + (i.get("text") or "")[:300],
+        "hashtags":     lambda i: lista_de_etiquetas(i.get("hashtags")),
+        "views":        lambda i: i.get("viewCount") or 0,
+        "likes":        lambda i: i.get("likes") or 0,
+        "comments":     lambda i: i.get("commentsCount") or 0,
+        "shares":       lambda i: 0,      # YouTube no publica compartidos
+        "saves":        lambda i: 0,      # ni guardados
+        "duration":     lambda i: a_segundos(i.get("duration")),
+        "created":      lambda i: i.get("date"),
+        "lang":         lambda i: None,
+        "is_slideshow": lambda i: False,
+        "is_muted":     lambda i: False,
+        "is_ad":        lambda i: bool(i.get("isPaidContent")),
+        "thumb":        lambda i: i.get("thumbnailUrl"),
+        "followers":    lambda i: i.get("numberOfSubscribers"),
+        "music":        lambda i: None,
+    },
+    "instagram": {
+        "id":           lambda i: str(i.get("id")),
+        "url":          lambda i: i.get("url"),
+        "author":       lambda i: i.get("ownerUsername"),
+        "caption":      lambda i: i.get("caption") or "",
+        "hashtags":     lambda i: lista_de_etiquetas(i.get("hashtags")),
+        "views":        lambda i: i.get("videoPlayCount") or i.get("igPlayCount") or 0,
+        "likes":        lambda i: i.get("likesCount") or 0,
+        "comments":     lambda i: i.get("commentsCount") or 0,
+        "shares":       lambda i: 0,
+        "saves":        lambda i: 0,
+        "duration":     lambda i: i.get("videoDuration"),
+        "created":      lambda i: i.get("timestamp"),
+        "lang":         lambda i: None,
+        "is_slideshow": lambda i: i.get("type") != "Video",
+        "is_muted":     lambda i: False,
+        "is_ad":        lambda i: bool(i.get("paidPartnership") or i.get("isSponsored")),
+        "thumb":        lambda i: i.get("displayUrl"),
+        "followers":    lambda i: None,   # el buscador por hashtag de IG no trae seguidores
+        "music":        lambda i: describir_audio(i.get("musicInfo"), "song_name", "artist_name", "uses_original_audio"),
+    },
+}
 
 
 def norm(plat, it):
-    if plat == "tiktok":
-        return dict(platform="tiktok", id=str(it.get("id")), url=it.get("webVideoUrl"),
-            author=(it.get("authorMeta") or {}).get("name"), caption=it.get("text") or "",
-            hashtags=[_tag(h) for h in (it.get("hashtags") or []) if _tag(h)],
-            views=it.get("playCount") or 0, likes=it.get("diggCount") or 0,
-            comments=it.get("commentCount") or 0, shares=it.get("shareCount") or 0,
-            saves=it.get("collectCount") or 0, duration=(it.get("videoMeta") or {}).get("duration"),
-            created=it.get("createTimeISO"), lang=it.get("textLanguage"),
-            is_slideshow=bool(it.get("isSlideshow")), is_muted=bool(it.get("isMuted")),
-            is_ad=bool(it.get("isAd") or it.get("isSponsored")),
-            thumb=(it.get("videoMeta") or {}).get("coverUrl"),
-            followers=(it.get("authorMeta") or {}).get("fans"),
-            music=_music_tk(it.get("musicMeta")))
-    if plat == "youtube":
-        return dict(platform="youtube", id=str(it.get("id")), url=it.get("url"),
-            author=it.get("channelName"),
-            caption=(it.get("title") or "") + " — " + (it.get("text") or "")[:300],
-            hashtags=[_tag(h) for h in (it.get("hashtags") or []) if _tag(h)],
-            views=it.get("viewCount") or 0, likes=it.get("likes") or 0,
-            comments=it.get("commentsCount") or 0, shares=0, saves=0,
-            duration=parse_hms(it.get("duration")), created=it.get("date"), lang=None,
-            is_slideshow=False, is_muted=False, is_ad=bool(it.get("isPaidContent")),
-            thumb=it.get("thumbnailUrl"),
-            followers=it.get("numberOfSubscribers"), music=None)
-    if plat == "instagram":
-        return dict(platform="instagram", id=str(it.get("id")), url=it.get("url"),
-            author=it.get("ownerUsername"), caption=it.get("caption") or "",
-            hashtags=[_tag(h) for h in (it.get("hashtags") or []) if _tag(h)],
-            views=it.get("videoPlayCount") or it.get("igPlayCount") or 0,
-            likes=it.get("likesCount") or 0, comments=it.get("commentsCount") or 0,
-            shares=0, saves=0, duration=it.get("videoDuration"),
-            created=it.get("timestamp"), lang=None,
-            is_slideshow=(it.get("type") != "Video"), is_muted=False,
-            is_ad=bool(it.get("paidPartnership") or it.get("isSponsored")),
-            thumb=it.get("displayUrl"),
-            followers=None,  # el scraper de hashtags de IG no trae seguidores
-            music=_music(it.get("musicInfo")))
+    """Traduce un item crudo de cualquier plataforma al formato interno común."""
+    fila = {"platform": plat}
+    for campo, sacar in MAPEO[plat].items():
+        fila[campo] = sacar(it)
+    return fila
 
 
 MEME_MARKERS = {"meme", "memes", "funny", "comedy", "fail", "lol", "joke", "prank", "shitpost", "ratio"}
@@ -281,26 +347,33 @@ def zscores(vals):
 
 # ---------------- supadata ----------------
 def fetch_transcript(url):
+    """Pide a Supadata lo que se habla en un video.
+
+    Devuelve el texto, o una marca "__ERR__<motivo>" si no se pudo. Nunca lanza
+    excepción: un video sin transcript no debe tumbar la corrida.
+    """
     if not SUPADATA_KEY:
         return "__ERR__no_key"
     if not url:
         return "__ERR__no_url"
-    q = urllib.parse.urlencode({"url": url, "text": "true"})
-    req = urllib.request.Request(f"https://api.supadata.ai/v1/transcript?{q}",
-                                 headers={"x-api-key": SUPADATA_KEY, "User-Agent": UA})
+    consulta = urllib.parse.urlencode({"url": url, "text": "true"})
+    peticion = urllib.request.Request(
+        "https://api.supadata.ai/v1/transcript?" + consulta,
+        headers={"x-api-key": SUPADATA_KEY, "User-Agent": UA},  # sin UA de navegador contesta 403
+    )
     try:
-        with urllib.request.urlopen(req, timeout=90) as r:
-            d = json.load(r)
-        c = d.get("content")
-        if isinstance(c, str):
-            return c
-        if isinstance(c, list):
-            return " ".join(s.get("text", "") for s in c)
-        return ""
+        with urllib.request.urlopen(peticion, timeout=90) as respuesta:
+            cuerpo = json.load(respuesta)
     except urllib.error.HTTPError as e:
         return f"__ERR__{e.code}"
     except Exception as e:
         return f"__ERR__{e}"
+    contenido = cuerpo.get("content")
+    if isinstance(contenido, str):
+        return contenido
+    if isinstance(contenido, list):      # a veces llega por fragmentos con tiempos
+        return " ".join(fragmento.get("text", "") for fragmento in contenido)
+    return ""
 
 
 MIN_WORDS, MIN_WPM = 25, 40
@@ -416,7 +489,7 @@ def run():
     for r in rows:
         r["engagement"] = r["likes"] + r["comments"] + r["shares"] + r["saves"]
         r["eng_rate"] = r["engagement"] / r["views"] if r["views"] else 0
-        ad = age_days(r["created"])
+        ad = antiguedad_en_dias(r["created"])
         r["age_days"] = ad
         r["views_per_day"] = r["views"] / ad if ad else 0
         # vistas por seguidor: alto = el FORMATO ganó, no la fama del autor -> replicable.
@@ -447,7 +520,7 @@ def run():
     except Exception:
         CACHE = {}
     best = []
-    api_fails, gate_total = 0, 0
+    api_fails, gate_total, sin_credito = 0, 0, 0
     for plat in plats:
         cands = sorted([r for r in passed if r["platform"] == plat],
                        key=lambda r: r.get("vir_score", 0), reverse=True)[:args.top]
@@ -468,6 +541,8 @@ def run():
             r["wpm"] = round(wpm, 1) if wpm else None
             if err and SUPADATA_KEY and t not in ("__ERR__no_key",):
                 api_fails += 1
+                if t == "__ERR__429":     # Supadata contesta 429 cuando se acaba el plan
+                    sin_credito += 1
             # si Supadata falló (o no hay llave), el video pasa por score y
             # Claude lo clasifica/limpia después — un fallo de API no descarta
             # un video bueno.
@@ -476,7 +551,11 @@ def run():
                 best.append(r)
     json.dump(CACHE, open(f"{OUT}/transcripts.json", "w", encoding="utf-8"), ensure_ascii=False)
     if api_fails:
-        print(f"  ⚠ No se pudo leer el audio de {api_fails} de {gate_total} videos (límite o falla del servicio).")
+        if sin_credito == api_fails:
+            print(f"  ⚠ Se acabó tu crédito de Supadata: no pude leer el audio de {api_fails} de {gate_total} videos.")
+            print(f"    Revisa tu plan en https://dash.supadata.ai/ — se renueva solo cada mes.")
+        else:
+            print(f"  ⚠ No se pudo leer el audio de {api_fails} de {gate_total} videos (límite o falla del servicio).")
         print(f"    Esos pasaron por puntaje y Claude los revisará al clasificar.")
     best.sort(key=lambda r: r["vir_score"], reverse=True)
 

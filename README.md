@@ -47,7 +47,7 @@ Si te dice que la carpeta ya existe, pídele a Claude que la borre y lo reinstal
 | [Supadata](https://supadata.ai/) | Lee lo que se dice en los videos | Gratis |
 | [Notion](https://www.notion.so/) | Ahí viven tus tablas (se activa como conector en Claude Code, sin llave) | Gratis |
 
-El agente te guía para sacar cada llave cuando lo saludes. Las tres cuentas son gratis y traen crédito incluido: las primeras corridas no te cuestan nada. Si le das mucho uso, cada corrida sale en menos de $0.50 USD. ¿Quieres más cobertura? Pídele que revise más videos por plataforma — cuesta un poco más.
+El agente te guía para sacar cada llave cuando lo saludes. Las tres cuentas son gratis y traen crédito incluido: las primeras corridas no te cuestan nada. Apify regala 5 dólares de crédito al mes y cada búsqueda completa gasta unos 70 centavos — te alcanza para unas 7 al mes sin pagar nada. ¿Quieres más cobertura? Pídele que revise más videos por plataforma — cuesta un poco más.
 
 🔒 **Tus llaves nunca salen de tu computadora.** Las pegas en un archivo, el agente las guarda en una carpeta privada de tu computadora que solo tú puedes abrir, y limpia el archivo. Nunca se suben a ningún lado ni pasan por el chat.
 
