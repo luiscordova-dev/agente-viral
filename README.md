@@ -9,13 +9,15 @@ Un agente de IA que trabaja en tu computadora. Le dices un nicho — cocina, fin
 
 Necesitas Claude Code ya instalado — el Roadmap que te trajo aquí lo deja listo. ¿Llegaste directo a este repo? Instala Claude Code primero: [claude.com/claude-code](https://claude.com/claude-code).
 
-## Instálalo (1 comando y un saludo)
+## Instálalo (pídeselo a Claude)
 
-```bash
-git clone https://github.com/luiscordova-dev/agente-viral ~/.claude/skills/agente-viral
+Abre Claude Code y pégale esto:
+
+```
+Instala este skill: https://github.com/luiscordova-dev/agente-viral
 ```
 
-Abre una sesión nueva de Claude Code y salúdalo:
+Él lo descarga solo. **Cierra esa sesión y abre una nueva** para que lo detecte, y salúdalo:
 
 ```
 hola agente viral
@@ -23,7 +25,15 @@ hola agente viral
 
 Él se presenta y te lleva de la mano. Te dice exactamente dónde sacar cada llave. Te abre un archivo donde las pegas — nunca van en el chat. Revisa que funcionen. Y crea tus tablas de Notion solo. Eso se hace una sola vez — después, cada corrida es escribir una frase.
 
-> Si el comando te dice que la carpeta ya existe, bórrala con `rm -rf ~/.claude/skills/agente-viral` y repítelo.
+<details>
+<summary>¿Prefieres hacerlo a mano en la terminal?</summary>
+
+```bash
+git clone https://github.com/luiscordova-dev/agente-viral ~/.claude/skills/agente-viral
+```
+
+Si te dice que la carpeta ya existe, bórrala con `rm -rf ~/.claude/skills/agente-viral` y repite el comando.
+</details>
 
 ## Lo que necesitas (son 3 cuentas, las 3 gratis)
 
