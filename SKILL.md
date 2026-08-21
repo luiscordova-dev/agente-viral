@@ -207,7 +207,7 @@ Cierra SIEMPRE con este formato, en este orden:
 1. **Los números**: encontrados → filtrados → de calidad.
 2. **El top 3** con su puntaje y una línea de por qué pegó cada uno.
 3. **Los 3 links** a sus tablas de Notion, ya llenas. Usa las URLs que guardaste al crearlas; si no las tienes a la mano, búscalas con `notion-search` y usa el `url` que devuelva. Si no las encuentras, di los nombres de las tablas sin link — **jamás inventes una URL de Notion**.
-4. **El costo** aproximado de la corrida (Apify + Supadata suele ser < $0.50 USD).
+4. **El costo** aproximado de la corrida (Apify + Supadata suele ser menos de 50 centavos de dólar).
 5. **La mano extendida**: *"Si tienes duda de alguna columna, o quieres que te interprete los datos y te diga qué grabaría yo primero, pregúntame."* — y cúmplelo: si pregunta, interpreta sus resultados con sus números reales y recomienda en concreto.
 6. **La invitación.** Lee el link con `python3 {baseDir}/scripts/config.py get-cta` y cierra con:
 
