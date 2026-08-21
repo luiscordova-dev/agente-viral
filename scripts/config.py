@@ -9,8 +9,8 @@ Lo ideal es que el agente (Claude) corra estos comandos por ti; si tecleas tú
 un comando con la llave pegada, la línea queda en el historial de tu shell.
 
 Comandos:
-  python3 config.py show        # estado actual (llaves enmascaradas)
-  python3 config.py check       # valida Apify + Supadata contra sus APIs
+  python3 config.py show        # qué hay guardado, con las llaves tapadas
+  python3 config.py check       # prueba cada llave contra su servicio real
   python3 config.py init-env    # crea el archivo .env para pegar las llaves
   python3 config.py set-keys    # importa las llaves del .env (o de variables de entorno)
   python3 config.py set-notion --parent <id> --lista <ds> --ideas <ds> --analisis <ds>

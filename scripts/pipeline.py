@@ -92,7 +92,7 @@ class FatalError(Exception):
 
 
 def actor_input(plat, niche, hashtag, per_platform):
-    if plat == "tiktok":   # por HASHTAG, sin filtro de fecha
+    if plat == "tiktok":   # se busca por etiqueta; la fecha se filtra después, no aquí
         return {"hashtags": [hashtag], "resultsPerPage": per_platform}
     if plat == "youtube":  # el nicho completo sí sirve como búsqueda
         return {"searchQueries": [niche], "maxResults": per_platform,
@@ -142,32 +142,46 @@ def launch(plat, niche, hashtag, per_platform):
     return rid
 
 
+ESTADOS_FINALES = {"SUCCEEDED": "terminó bien", "FAILED": "falló",
+                   "ABORTED": "se canceló", "TIMED-OUT": "se pasó de tiempo"}
+
+
+def consultar_estado(plat, rid):
+    """Pregunta cómo va una búsqueda. Devuelve (estado, seguir_esperando)."""
+    try:
+        return api("GET", f"actor-runs/{rid}", timeout=30)["data"]["status"], True
+    except urllib.error.HTTPError as e:
+        if e.code in (401, 403, 404):   # no se va a arreglar solo: dejar de esperar
+            print(f"  ⚠ {plat}: Apify contestó error {e.code} al consultar la corrida. Se salta esta plataforma.")
+            return None, False
+        return None, True               # tropiezo pasajero: reintentar
+    except Exception:
+        return None, True
+
+
 def wait_all(runs, timeout=600):
-    deadline = time.time() + timeout
-    done = {}
-    while runs and time.time() < deadline:
-        for plat, rid in list(runs.items()):
-            try:
-                st = api("GET", f"actor-runs/{rid}", timeout=30)["data"]["status"]
-            except urllib.error.HTTPError as e:
-                if e.code in (401, 403, 404):  # error permanente: no tiene caso seguir esperando
-                    print(f"  ⚠ {plat}: Apify contestó error {e.code} al consultar la corrida. Se salta esta plataforma.")
-                    runs.pop(plat)
-                continue  # error pasajero de red: se reintenta en el siguiente ciclo
-            except Exception:
-                continue
-            if st in ("SUCCEEDED", "FAILED", "ABORTED", "TIMED-OUT"):
-                done[plat] = (rid, st)
-                runs.pop(plat)
-                dicho = {"SUCCEEDED": "terminó bien", "FAILED": "falló",
-                         "ABORTED": "se canceló", "TIMED-OUT": "se pasó de tiempo"}[st]
-                print(f"  ✓ {plat}: {dicho}")
-        if runs:
+    """Espera a que las búsquedas terminen. Devuelve las que dieron resultado.
+    Lo que no termine a tiempo se cancela para no seguir gastando crédito."""
+    pendientes = dict(runs)
+    listas = {}
+    se_acaba_a_las = time.time() + timeout
+
+    while pendientes and time.time() < se_acaba_a_las:
+        for plat, rid in list(pendientes.items()):
+            estado, seguir = consultar_estado(plat, rid)
+            if not seguir:
+                pendientes.pop(plat)
+            elif estado in ESTADOS_FINALES:
+                pendientes.pop(plat)
+                listas[plat] = (rid, estado)
+                print(f"  ✓ {plat}: {ESTADOS_FINALES[estado]}")
+        if pendientes:
             time.sleep(6)
-    for plat, rid in runs.items():  # lo que no terminó a tiempo se aborta para no gastar
+
+    for plat, rid in pendientes.items():
         print(f"  ⚠ {plat}: no terminó en {timeout // 60} minutos. Se cancela y se salta esta plataforma.")
         abort_run(rid)
-    return done
+    return listas
 
 
 def dataset(rid):
@@ -334,11 +348,15 @@ def norm(plat, it):
 
 
 # Videos que técnicamente son virales pero no sirven para aprender nada.
-# La lista es mía y está pensada para español e inglés: cuando el único texto
-# del post son etiquetas de humor, casi siempre es un meme reciclado.
+# Cuando el único texto del post son etiquetas de humor, casi siempre es un meme
+# reciclado. La lista arranca en español porque ahí está el público, y suma las
+# formas inglesas que se cuelan en los nichos mezclados.
 ETIQUETAS_DE_HUMOR = {
-    "meme", "memes", "humor", "chiste", "chistes", "gracioso", "risa", "comedia",
-    "funny", "comedy", "joke", "lol", "fail", "prank", "broma", "shitpost", "ratio",
+    # español — es el público de esta herramienta
+    "humor", "chiste", "chistes", "gracioso", "risa", "risas", "comedia", "broma",
+    "bromas", "cagado", "jaja", "jajaja", "parodia", "chusco", "divertido",
+    # inglés — el nicho suele mezclar idiomas
+    "meme", "memes", "funny", "comedy", "humour", "jokes", "lmao", "hilarious",
 }
 
 # Los límites de qué merece analizarse. Un video de 5 segundos no alcanza a
@@ -392,6 +410,32 @@ def zscores(valores):
     promedio = statistics.mean(limpios)
     desviacion = statistics.pstdev(limpios) or 1.0
     return lambda x: (x - promedio) / desviacion
+
+
+# Cuánto pesa cada señal en el puntaje final. Suman 1.
+PESO_ALCANCE = 0.35      # a cuánta gente llegó en total
+PESO_VELOCIDAD = 0.30    # qué tan rápido está creciendo
+PESO_INTERACCION = 0.35  # qué tan enganchados quedaron los que lo vieron
+
+
+def puntuar_plataforma(grupo):
+    """Le pone puntaje a cada video comparándolo SOLO contra los de su misma
+    plataforma. Un millón de vistas significa cosas distintas en TikTok y en
+    YouTube, así que cada mundo se mide con su propia vara.
+
+    Las vistas se comprimen con logaritmo antes de comparar: sin eso, un solo
+    video gigantesco aplastaría la escala de todos los demás."""
+    if not grupo:
+        return
+    escala_alcance = zscores([math.log10(r["vistas"] + 1) for r in grupo])
+    escala_velocidad = zscores([math.log10(r["vistas_por_dia"] + 1) for r in grupo])
+    escala_interaccion = zscores([r["tasa_interaccion"] for r in grupo])
+    for r in grupo:
+        r["puntaje"] = round(
+            PESO_ALCANCE * escala_alcance(math.log10(r["vistas"] + 1))
+            + PESO_VELOCIDAD * escala_velocidad(math.log10(r["vistas_por_dia"] + 1))
+            + PESO_INTERACCION * escala_interaccion(r["tasa_interaccion"]),
+            3)
 
 
 # ══════ Escuchar lo que se dice ══════
@@ -469,10 +513,10 @@ def run():
     ap = argparse.ArgumentParser()
     ap.add_argument("niche")
     ap.add_argument("--hashtag", default=None,
-                    help="hashtag para TikTok/Instagram (sin #). Default: el nicho sin espacios")
+                    help="la etiqueta que buscan TikTok e Instagram (sin el #). Si no la pasas, se usa el nicho pegado")
     ap.add_argument("--platforms", default="tiktok,youtube,instagram")
     ap.add_argument("--per-platform", type=int, default=80)
-    ap.add_argument("--top", type=int, default=6, help="candidatos/plataforma al gate de transcript")
+    ap.add_argument("--top", type=int, default=6, help="cuántos finalistas por plataforma se mandan a leer")
     ap.add_argument("--outdir", default="data")
     args = ap.parse_args()
 
@@ -554,16 +598,7 @@ def run():
         r["motivos_descarte"] = quality_check(r)
         r["paso_filtro"] = not r["motivos_descarte"]
     for plat in plats:
-        grp = [r for r in rows if r["plataforma"] == plat and r["paso_filtro"]]
-        if not grp:
-            continue
-        zv = zscores([math.log10(r["vistas"] + 1) for r in grp])
-        zd = zscores([math.log10(r["vistas_por_dia"] + 1) for r in grp])
-        ze = zscores([r["tasa_interaccion"] for r in grp])
-        for r in grp:
-            r["puntaje"] = round(0.35 * zv(math.log10(r["vistas"] + 1)) +
-                                   0.30 * zd(math.log10(r["vistas_por_dia"] + 1)) +
-                                   0.35 * ze(r["tasa_interaccion"]), 3)
+        puntuar_plataforma([r for r in rows if r["plataforma"] == plat and r["paso_filtro"]])
     passed = [r for r in rows if r["paso_filtro"]]
     print(f"   pasaron el filtro: {len(passed)} / {len(rows)}")
     if not passed:

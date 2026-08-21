@@ -23,13 +23,13 @@ Una fila = un video viral que pasó todos los filtros. Las columnas que importan
 
 Una fila = una idea lista para grabar, ya adaptada a tu nicho.
 
-- **Hook Propuesto** — la frase de arranque, lista para decirla a cámara.
-- **Angulo** — qué formato ganador imita.
-- **Por que funciona** — la prueba: los números del video original.
-- **Basado en** — clic y ves el viral del que salió.
+- **Gancho Propuesto** — la frase de arranque, lista para decirla a cámara.
+- **Que Imita** — qué formato ganador imita.
+- **Por Que Deberia Funcionar** — la prueba: los números del video original.
+- **Video que la Inspiro** — clic y ves el viral del que salió.
 - **Estado** — muévelo a "en produccion" cuando la grabes, y a "publicado" cuando salga.
 
-**Úsala así:** elige una idea, abre su original en "Basado en", y graba con el Hook Propuesto.
+**Úsala así:** elige una idea, abre su original en "Video que la Inspiro", y graba con el Hook Propuesto.
 
 ## 🧠 Análisis
 
