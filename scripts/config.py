@@ -21,8 +21,6 @@ import json, os, sys, urllib.request, urllib.error, argparse
 
 DIR = os.path.expanduser("~/.agente-viral")
 PATH = os.path.join(DIR, "config.json")
-# Compatibilidad: si existe una config vieja de videos-virales, se lee como respaldo.
-LEGACY_PATH = os.path.expanduser("~/.videos-virales/config.json")
 # El .env en la raíz del repo: la puerta de entrada para pegar las llaves sin chat.
 ENV_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env")
 
@@ -113,8 +111,8 @@ def legacy_cli_keys():
 
 
 def load():
-    cfg = _read(PATH) or _read(LEGACY_PATH)  # respaldo: config vieja de videos-virales
-    for k, v in legacy_cli_keys().items():   # relleno: llaves del CLI, solo si faltan
+    cfg = _read(PATH)
+    for k, v in legacy_cli_keys().items():  # relleno: llaves del CLI, solo si faltan
         cfg.setdefault(k, v)
     return cfg
 
@@ -140,8 +138,6 @@ def cmd_show():
     cfg = load()
     n = cfg.get("notion") or {}
     print(f"config: {PATH}")
-    if not _read(PATH) and _read(LEGACY_PATH):
-        print(f"  (leyendo respaldo de {LEGACY_PATH} — al guardar se migra aquí)")
     print(f"  apify_token:      {mask(cfg.get('apify_token'))}")
     print(f"  supadata_api_key: {mask(cfg.get('supadata_api_key'))}")
     print(f"  notion.parent:    {n.get('parent_page_id', '(falta)')}")

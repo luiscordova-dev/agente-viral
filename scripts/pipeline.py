@@ -12,7 +12,7 @@ y la escritura a Notion las hace Claude en el skill, leyendo best.json.
 Credenciales (en este orden de prioridad):
  1. variables de entorno  APIFY_TOKEN / SUPADATA_API_KEY
  2. ~/.agente-viral/config.json  {"apify_token": "...", "supadata_api_key": "..."}
- 3. (respaldo) ~/.videos-virales/config.json
+ 3. (respaldo) ~/.apify/auth.json del CLI de Apify  /  ~/.supadata.json
 
 Notas técnicas (lecciones horneadas — no cambiar sin razón):
  - TikTok: usar clockworks por HASHTAG (el keyword search de otros actores falla).
@@ -26,27 +26,20 @@ import urllib.request, urllib.parse, urllib.error
 
 # ---------------- credenciales ----------------
 CONFIG_PATH = os.path.expanduser("~/.agente-viral/config.json")
-LEGACY_CONFIG_PATH = os.path.expanduser("~/.videos-virales/config.json")
 
 
 def load_config():
-    # mismo criterio que config.py: el archivo nuevo manda; si está vacío o no
-    # existe, se cae al respaldo viejo; y al final rellena con las llaves del
-    # CLI de Apify (`apify login`) o de ~/.supadata.json si el usuario ya las tiene.
+    # mismo criterio que config.py: manda ~/.agente-viral/config.json, y al final
+    # rellena con las llaves del CLI de Apify (`apify login`) o de ~/.supadata.json
+    # si el usuario ya las tiene guardadas ahí.
     cfg = {}
-    for path in (CONFIG_PATH, LEGACY_CONFIG_PATH):
-        if not os.path.exists(path):
-            continue
+    if os.path.exists(CONFIG_PATH):
         try:
-            found = json.load(open(path, encoding="utf-8"))
+            cfg = json.load(open(CONFIG_PATH, encoding="utf-8")) or {}
         except Exception:
-            print(f"⚠ El archivo {path} está dañado. Vuelve a guardar tus llaves con: config.py set-keys")
-            continue
-        if found:
-            cfg = found
-            break
-    for path, field, key in ((("~/.apify/auth.json"), "token", "apify_token"),
-                             (("~/.supadata.json"), "api_key", "supadata_api_key")):
+            print(f"⚠ El archivo {CONFIG_PATH} está dañado. Vuelve a guardar tus llaves con: config.py set-keys")
+    for path, field, key in (("~/.apify/auth.json", "token", "apify_token"),
+                             ("~/.supadata.json", "api_key", "supadata_api_key")):
         if cfg.get(key):
             continue
         try:
