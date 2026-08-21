@@ -32,6 +32,7 @@ CREATE TABLE (
 "Tipo Contenido" SELECT('educativo':blue, 'storytelling':orange, 'promo':gray, 'reto/demo':green, 'motivacional':yellow, 'musica/baile':pink),
 "Idioma" RICH_TEXT,
 "Hook" RICH_TEXT COMMENT 'gancho de los primeros segundos',
+"Hook Visual" RICH_TEXT COMMENT 'que se ve en la portada + el texto en pantalla',
 "Transcript" RICH_TEXT,
 "Fecha Scrape" DATE
 )

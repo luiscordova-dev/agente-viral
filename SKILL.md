@@ -131,13 +131,15 @@ Para cada video: lee `transcript` + `caption` y determina:
 - **Hook**: el gancho real de los primeros segundos, 1 frase clara.
 - **Idioma**: ISO (`en`, `es`, `pt`, …).
 
-**Si `transcript` viene vacío** (el lector de audio falló en ese video): clasifícalo solo con el `caption`, y antepón `[SIN TRANSCRIPT]` al Hook para que se note en la tabla. Si el caption tampoco alcanza para saber de qué trata, no lo subas.
+**El gancho visual (los ojos del agente)**: cada video trae `thumb_file` — su portada, ya descargada en `data/thumbs/`. MÍRALA con la herramienta de leer archivos (Read muestra imágenes) y escribe el **Hook Visual** en 1 frase: qué se ve + el texto en pantalla si lo hay (ej. *"Talking head con terminal de fondo; texto grande: '5 CLAUDE CODE PLUGINS'"*). Si `thumb_file` es null, déjalo vacío. Las portadas pesan poco: míralas todas, ahí vive el gancho que detiene el scroll.
+
+**Si `transcript` viene vacío** (el lector de audio falló en ese video): clasifícalo con el `caption` y la portada, y antepón `[SIN TRANSCRIPT]` al Hook para que se note en la tabla. Si ni el caption ni la portada alcanzan para saber de qué trata, no lo subas.
 
 **REGLA DE CALIDAD CRÍTICA**: el gate por wpm deja pasar **lyrics/música** (un rap a buen wpm parece habla). Si el transcript es letra de canción / sin contenido informativo o narrativo, clasifícalo `musica/baile`, antepón `[FILTRADO]` al Hook, y por default **NO lo subas** a la Lista (salvo que el usuario pida ver todo).
 
 ## PASO 4 — Escribir **Lista de Videos con Data**
 `notion-create-pages` con `parent: {data_source_id: "<lista_ds de config>"}`. Una página por video (excluyendo música). Propiedades (nombres exactos):
-`Video` (title, ≤80 chars), `Plataforma` (select), `Nicho` (texto), `Autor`, `userDefined:URL`, `Views`, `Likes`, `Comentarios`, `Engagement Rate` (fracción 0–1), `Score Viralidad`, `Duracion (s)`, `WPM`, `Dias`, `Tipo Contenido` (select), `Idioma`, `Hook`, `Transcript` (≤1200 chars), `date:Fecha Scrape:start` (hoy).
+`Video` (title, ≤80 chars), `Plataforma` (select), `Nicho` (texto), `Autor`, `userDefined:URL`, `Views`, `Likes`, `Comentarios`, `Engagement Rate` (fracción 0–1), `Score Viralidad`, `Duracion (s)`, `WPM`, `Dias`, `Tipo Contenido` (select), `Idioma`, `Hook`, `Hook Visual` (lo que viste en la portada; si la tabla del usuario es vieja y no tiene esta columna, omítela sin quejarte), `Transcript` (≤1200 chars), `date:Fecha Scrape:start` (hoy).
 Mapeo desde `best.json`: `Views`←`views` · `Likes`←`likes` · `Comentarios`←`comments` · `Engagement Rate`←`eng_rate` · `Score Viralidad`←`vir_score` · `Duracion (s)`←`duration` (entero) · `WPM`←`wpm` · `Dias`←`age_days` (redondea a 1 decimal) · `Autor`←`author` · `userDefined:URL`←`url`.
 Guarda los `page.id` que devuelve (para la relación del paso 5).
 
@@ -147,7 +149,7 @@ Identifica los hooks/formatos ganadores y genera 4–6 ideas que TRASLADAN esas 
 
 ## PASO 6 — Escribir **Análisis** (1 registro por corrida)
 `notion-create-pages` con `parent: {data_source_id: "<analisis_ds>"}`:
-`Analisis` (title, "<Nicho> — <fecha>"), `Nicho` (texto), `date:Fecha:start`, `Videos Analizados`, `Plataformas` (JSON array), `Hooks Comunes`, `Formatos que Funcionan`, `Patrones Clave`, `Insights y Recomendaciones` (accionable), `Oportunidad de Adaptacion`.
+`Analisis` (title, "<Nicho> — <fecha>"), `Nicho` (texto), `date:Fecha:start`, `Videos Analizados`, `Plataformas` (JSON array), `Hooks Comunes`, `Formatos que Funcionan`, `Patrones Clave` (incluye aquí los patrones VISUALES que viste en las portadas: texto en pantalla, encuadre, qué se repite entre los ganadores), `Insights y Recomendaciones` (accionable), `Oportunidad de Adaptacion`.
 
 ## PASO 7 — El botín (el cierre de cada corrida)
 

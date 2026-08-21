@@ -190,7 +190,8 @@ def norm(plat, it):
             saves=it.get("collectCount") or 0, duration=(it.get("videoMeta") or {}).get("duration"),
             created=it.get("createTimeISO"), lang=it.get("textLanguage"),
             is_slideshow=bool(it.get("isSlideshow")), is_muted=bool(it.get("isMuted")),
-            is_ad=bool(it.get("isAd") or it.get("isSponsored")))
+            is_ad=bool(it.get("isAd") or it.get("isSponsored")),
+            thumb=(it.get("videoMeta") or {}).get("coverUrl"))
     if plat == "youtube":
         return dict(platform="youtube", id=str(it.get("id")), url=it.get("url"),
             author=it.get("channelName"),
@@ -199,7 +200,8 @@ def norm(plat, it):
             views=it.get("viewCount") or 0, likes=it.get("likes") or 0,
             comments=it.get("commentsCount") or 0, shares=0, saves=0,
             duration=parse_hms(it.get("duration")), created=it.get("date"), lang=None,
-            is_slideshow=False, is_muted=False, is_ad=bool(it.get("isPaidContent")))
+            is_slideshow=False, is_muted=False, is_ad=bool(it.get("isPaidContent")),
+            thumb=it.get("thumbnailUrl"))
     if plat == "instagram":
         return dict(platform="instagram", id=str(it.get("id")), url=it.get("url"),
             author=it.get("ownerUsername"), caption=it.get("caption") or "",
@@ -208,7 +210,8 @@ def norm(plat, it):
             likes=it.get("likesCount") or 0, comments=it.get("commentsCount") or 0,
             shares=0, saves=0, duration=it.get("videoDuration"),
             created=it.get("timestamp"), lang=None,
-            is_slideshow=(it.get("type") != "Video"), is_muted=False, is_ad=False)
+            is_slideshow=(it.get("type") != "Video"), is_muted=False, is_ad=False,
+            thumb=it.get("displayUrl"))
 
 
 MEME_MARKERS = {"meme", "memes", "funny", "comedy", "fail", "lol", "joke", "prank", "shitpost", "ratio"}
@@ -264,6 +267,34 @@ def fetch_transcript(url):
 
 
 MIN_WORDS, MIN_WPM = 25, 40
+
+
+# ---------------- portadas (el gancho visual) ----------------
+def download_thumbs(best, outdir):
+    """Baja la portada de cada video finalista (una foto, no el video).
+    El agente las mira después para leer el gancho visual. Mejor esfuerzo:
+    una portada caída nunca detiene la corrida."""
+    tdir = os.path.join(outdir, "thumbs")
+    os.makedirs(tdir, exist_ok=True)
+    n = 0
+    for r in best:
+        u = r.get("thumb")
+        r["thumb_file"] = None
+        if not u:
+            continue
+        fname = os.path.join(tdir, f"{r['platform']}_{r['id']}.jpg")
+        try:
+            if not os.path.exists(fname):
+                req = urllib.request.Request(u, headers={"User-Agent": UA})
+                with urllib.request.urlopen(req, timeout=30) as resp:
+                    data = resp.read()
+                with open(fname, "wb") as f:
+                    f.write(data)
+            r["thumb_file"] = fname
+            n += 1
+        except Exception:
+            pass
+    return n
 
 
 # ---------------- main ----------------
@@ -410,6 +441,10 @@ def run():
         print(f"  ⚠ No se pudo leer el audio de {api_fails} de {gate_total} videos (límite o falla del servicio).")
         print(f"    Esos pasaron por puntaje y Claude los revisará al clasificar.")
     best.sort(key=lambda r: r["vir_score"], reverse=True)
+
+    print("5) bajando las portadas (el gancho visual)…")
+    got = download_thumbs(best, OUT)
+    print(f"   {got} de {len(best)} portadas en {OUT}/thumbs/")
 
     json.dump(rows, open(f"{OUT}/all_scored.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1, default=str)
     json.dump(best, open(f"{OUT}/best.json", "w", encoding="utf-8"), ensure_ascii=False, indent=1, default=str)

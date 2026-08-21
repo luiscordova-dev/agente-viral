@@ -5,7 +5,8 @@ Un agente de IA que trabaja en tu computadora. Le dices un nicho — cocina, fin
 1. **Busca** los videos virales de ese nicho en TikTok, YouTube e Instagram.
 2. **Tira la basura**: memes, anuncios, clips de pura música.
 3. **Lee lo que se dice** en cada video para quedarse con contenido de verdad.
-4. **Te deja 3 tablas en tu Notion**: los virales con sus números, ideas adaptadas a tu canal (o al de tu cliente), y el análisis de qué está funcionando.
+4. **Mira la portada** de cada finalista y lee el gancho visual: el texto en pantalla y lo que se ve en el primer segundo — lo que detiene el scroll.
+5. **Te deja 3 tablas en tu Notion**: los virales con sus números, ideas adaptadas a tu canal (o al de tu cliente), y el análisis de qué está funcionando.
 
 Necesitas Claude Code ya instalado — el Roadmap que te trajo aquí lo deja listo. ¿Llegaste directo a este repo? Instala Claude Code primero: [claude.com/claude-code](https://claude.com/claude-code).
 
@@ -110,6 +111,7 @@ Abre Claude Code y dile: *"lee el SKILL.md de agente-viral y ayúdame a adaptarl
 - **Depende de servicios externos.** Si TikTok cambia sus reglas o Apify falla, esa corrida sale coja. El agente te avisa en español, sin drama.
 - **Los hashtags chicos dan resultados chicos.** Si tu nicho es muy de nicho, el agente te propondrá hashtags más grandes del mismo tema.
 - **De YouTube también llegan videos largos.** Los cortos salen de TikTok e Instagram; los formatos largos que funcionan también son oro para sacar ideas.
+- **No ve el video completo — ve la portada.** El agente escucha lo que se dice y mira la imagen de entrada. Con eso lee el gancho hablado y el visual, que es donde vive la retención.
 - **No es asesoría.** El score de viralidad es matemática sobre datos públicos, no una garantía de que tu video pegue. Compara cada video contra los de SU plataforma (un millón de views en TikTok no vale lo mismo que en YouTube), pero nadie puede prometerte que copiar un formato funcione.
 
 ## El siguiente
