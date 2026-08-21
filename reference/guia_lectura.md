@@ -36,3 +36,8 @@ Una fila = una idea lista para grabar, ya adaptada a tu nicho.
 Una fila = el resumen de una búsqueda completa. Léela ANTES de elegir qué grabar: te dice qué se repite entre los ganadores — ganchos, formatos, portadas, audios, hashtags — y dónde está la oportunidad en tu nicho.
 
 **Úsala así:** corre el mismo nicho cada cierto tiempo y compara filas. Ahí ves las tendencias moverse.
+
+---
+
+Este agente corre en tu computadora, cuando tú lo abres.
+¿Quieres uno que trabaje aunque tú no estés? → {CTA_URL}

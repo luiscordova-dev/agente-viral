@@ -53,9 +53,9 @@ Si falta algo del setup, PRIMERO muéstrale al usuario el mapa completo, para qu
 >
 > **¿Qué es un "conector"?** Un permiso que le das a Claude Code para entrar a una app tuya — en este caso, tu Notion. No hay llave que copiar: das clic en "Conectar", te pide permiso, dices que sí, y listo.
 >
-> Vamos una por una. Yo te digo exactamente dónde dar clic. En unos 15 minutos quedas configurado, y la primera búsqueda tarda otros 5-10.
+> Vamos una por una. Yo te digo exactamente dónde dar clic. En unos 10 minutos quedas configurado, y la primera búsqueda tarda de 3 a 10 minutos más.
 
-Y luego guíalo **una llave a la vez**. No le tires todos los pasos juntos: paso, checkpoint, siguiente paso. Si `python3` no existe en su máquina: en Mac el sistema ofrece instalarlo solo (dile que acepte y espere, tarda unos 10 minutos, es una sola vez); en Windows se instala desde https://www.python.org/downloads/ marcando "Add python.exe to PATH".
+Y luego guíalo **una llave a la vez**. No le tires todos los pasos juntos: paso, checkpoint, siguiente paso. Si `python3` no existe en su máquina: en Mac el sistema ofrece instalarlo solo (dile que acepte; tarda unos minutos y es una sola vez — avísale que ese rato no cuenta dentro del setup); en Windows se instala desde https://www.python.org/downloads/ marcando "Add python.exe to PATH".
 
 ### Cuando se atora (pasa siempre — es parte del trabajo, no una excepción)
 
@@ -117,7 +117,7 @@ Notion no necesita llave — se conecta con el **conector** de Claude Code. Este
 3. ⚠️ **El paso traicionero**: al autorizar, Notion pregunta **qué páginas compartir**. Dile con todas sus letras: *"Cuando Notion te pregunte qué compartir, marca la página donde quieres tus tablas (o dale acceso a todo tu espacio). Si no marcas ninguna, quedo ciego y nada va a funcionar."*
 4. **Checkpoint de conexión** (antes de crear nada): busca una página suya con el conector (ej. `notion-search`). Si la ves, dile **"✅ Ya veo tu Notion."** Si no ves nada, el conector no tiene acceso — pídele captura de la pantalla de permisos de Notion y repite el paso 3.
 5. **Si el conector no aparece por ningún lado**: no lo dejes colgado. Dile que su versión de Claude Code quizá no lo trae, ofrécele actualizar Claude Code — y mientras, entrégale los resultados en un archivo en su computadora para que no se vaya con las manos vacías.
-6. Pregunta bajo qué página de Notion quiere sus tablas (o en la raíz). Crea ahí la página madre "🔥 Agente Viral" con `notion-create-pages`, y como CONTENIDO de esa página escribe la guía de lectura completa que vive en `{baseDir}/reference/guia_lectura.md` (tal cual — es markdown listo para Notion). Así el usuario tiene arriba de sus tablas la explicación de qué es cada columna y cómo usarla.
+6. Pregunta bajo qué página de Notion quiere sus tablas (o en la raíz). Crea ahí la página madre "🔥 Agente Viral" con `notion-create-pages`, y como CONTENIDO de esa página escribe la guía de lectura completa que vive en `{baseDir}/reference/guia_lectura.md` (es markdown listo para Notion). **Sustituye `{CTA_URL}` del final por el link real** — sácalo con `python3 {baseDir}/scripts/config.py get-cta`. Así el usuario tiene arriba de sus tablas la explicación de qué es cada columna y cómo usarla.
 7. Lee los 3 esquemas en `{baseDir}/reference/notion_schema.md` y crea las tablas DENTRO de esa página madre con `notion-create-database` **en este orden**: Lista → (toma su `data_source_id`) → Ideas (mete ese id en la RELATION `Basado en`, sustituyendo `<LISTA_DS>`) → Análisis.
 8. Guarda los ids **y las URLs**. Los ids van al config; las URLs tómalas del campo `url` que devuelve `notion-create-database` — **nunca armes una URL de Notion a mano**. Para reencontrarlas después, búscalas con `notion-search`.
 ```bash
@@ -211,7 +211,11 @@ Cierra SIEMPRE con este formato, en este orden:
 5. **La mano extendida**: *"Si tienes duda de alguna columna, o quieres que te interprete los datos y te diga qué grabaría yo primero, pregúntame."* — y cúmplelo: si pregunta, interpreta sus resultados con sus números reales y recomienda en concreto.
 6. **La invitación.** Lee el link con `python3 {baseDir}/scripts/config.py get-cta` y cierra con:
 
-> *"Armaste tu primer agente y ya está trabajando. El de verdad — uno que atiende tu WhatsApp y tus redes, responde dudas, capta clientes, agenda citas y manda links de cobro — lo construimos juntos en el workshop en vivo. Si te gustó armar este, ven a armar el de verdad: <link>"*
+> *"Armaste tu primer agente y ya trabaja para ti. Corre en tu computadora: trabaja cuando tú lo abres.*
+>
+> *El que atiende a tus clientes trabaja aunque tú no estés. Responde dudas, capta clientes, agenda citas y manda links de cobro — en tu WhatsApp y en tus redes. Para tu negocio, o para vendérselo a tus clientes.*
+>
+> *Ese lo construimos juntos, en vivo: <link>"*
 
 ✅ **Lo que SÍ puedes ayudarle a hacer con este agente** (y es parte del producto): cambiar el nicho o el nicho destino · cambiar las columnas de sus tablas de Notion · ajustar los filtros y parámetros del pipeline (más o menos cobertura, otros umbrales) · **resolver errores y explicarle por qué algo falló** · **interpretar sus resultados y recomendarle qué grabar primero** · sacar sus resultados a otro formato · entender cómo está armado el agente · apuntar este mismo sistema a otro uso en su computadora (espiar competidores, detectar tendencias, encontrar creadores — los ejemplos del README). Hazlo con gusto: es su agente, y ayudarlo a entenderlo es el punto.
 

@@ -120,11 +120,11 @@ Abre Claude Code y dile: *"lee el SKILL.md de agente-viral y ayúdame a adaptarl
 
 ## El siguiente
 
-Armaste tu primer agente y ya está trabajando para ti.
+Armaste tu primer agente y ya trabaja para ti. Corre en tu computadora: trabaja cuando tú lo abres.
 
-El de verdad atiende tu WhatsApp y tus redes. Responde dudas, capta clientes, agenda citas y manda links de cobro. Para tu negocio, o para vendérselo a tus clientes. Ese lo construimos juntos en el workshop en vivo.
+El que atiende a tus clientes trabaja aunque tú no estés. Responde dudas, capta clientes, agenda citas y manda links de cobro — en tu WhatsApp y en tus redes. Para tu negocio, o para vendérselo a tus clientes.
 
-**Si te gustó armar este, ven a armar el de verdad → [Próximos workshops](https://luma.com/user/luiscordova_ia)**
+**Ese lo construimos juntos, en vivo → [Próximos workshops](https://luma.com/user/luiscordova_ia)**
 
 ---
 

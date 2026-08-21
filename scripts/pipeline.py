@@ -57,6 +57,19 @@ CFG = load_config()
 APIFY_TOKEN = os.environ.get("APIFY_TOKEN") or CFG.get("apify_token")
 SUPADATA_KEY = os.environ.get("SUPADATA_API_KEY") or CFG.get("supadata_api_key")
 
+
+def cta_url():
+    """El link del cierre. Sale del config; si no está, del default de config.py.
+    Nunca se escribe a mano aquí para que no se separe del resto."""
+    if CFG.get("cta_url"):
+        return CFG["cta_url"]
+    try:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import config
+        return config.DEFAULT_CTA_URL
+    except Exception:
+        return None
+
 UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36"
 NOW = dt.datetime.now(dt.timezone.utc)
 
@@ -484,6 +497,12 @@ def run():
     else:
         print(f"\n✅ {len(best)} videos de CALIDAD -> {OUT}/best.json")
     print(f"   resumen -> {OUT}/meta.json")
+    link = cta_url()
+    if link:
+        print()
+        print("   Tu agente ya trabaja para ti. Corre aquí, en tu computadora.")
+        print("   El que atiende clientes trabaja aunque tú no estés:")
+        print(f"   {link}")
 
 
 def main():
