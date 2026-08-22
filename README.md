@@ -1,5 +1,7 @@
 # 🤖 Agente Viral — tu primer agente en 20 minutos
 
+> No es una app ni levanta un servidor. **Es un agente**: se instala dentro de Claude Code con una frase, y de ahí en adelante trabaja contigo por conversación.
+
 Un agente de IA que trabaja en tu computadora. Le dices un nicho — cocina, finanzas, skincare, el que sea — y él solo:
 
 1. **Busca** los videos virales de ese nicho en TikTok, YouTube e Instagram.
@@ -10,8 +12,6 @@ Un agente de IA que trabaja en tu computadora. Le dices un nicho — cocina, fin
 6. **Te deja 3 tablas en tu Notion**: los virales con sus números, ideas escritas para tu negocio y tu cliente, y el análisis de qué está funcionando.
 
 Necesitas Claude Code ya instalado — el mapa que te trajo aquí lo deja listo. ¿Llegaste directo a esta página sin pasar por el mapa? Instala Claude Code primero: [claude.com/claude-code](https://claude.com/claude-code).
-
-> **Esto no se "ejecuta" como una app ni levanta un servidor.** Es un agente: se instala dentro de Claude Code y de ahí en adelante trabaja contigo por conversación. Instalarlo es una frase.
 
 ## Instálalo (pídeselo a Claude)
 
