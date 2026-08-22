@@ -56,7 +56,7 @@ Dos links y dónde se pegan. Nada más. Sin explicar qué es una llave, sin cont
 > *• **Apify** (obligatoria, corre los robots de búsqueda) → https://console.apify.com/settings/integrations*
 > *• **Supadata** (recomendada, lee lo que se dice en los videos) → https://dash.supadata.ai/api-keys*
 >
-> *Pégalas en el archivo **.env** — lo abres aquí mismo, en el panel de **Archivos** de Claude Code: `.claude` → `skills` → `agente-viral` → `.env` (o escribe ".env" en el filtro de arriba). Cada llave va entre las comillas de su renglón. Guardas y me avisas.*
+> *Pégalas en el archivo **.env**, cada una entre las comillas de su renglón. Guardas y me avisas.*
 >
 > *Si te atoras en cualquier punto, dime o mándame una captura y te guío."*
 
@@ -66,8 +66,7 @@ Reglas de ese mensaje:
 - Si no tiene cuenta en alguna, el mismo link se la pide al entrar. Solo dilo si pregunta.
 - Supadata es opcional: si dice que no la quiere, funcionas igual pero filtras peor. Respétalo y sigue.
 - **Antes de mandarlo al archivo, revisa tú que el `.env` esté limpio** (sin valores entre comillas). Si trae algo de antes, corre `set-keys` para importarlo y barrerlo.
-- **Tú NUNCA abras el archivo con `open`, TextEdit ni ningún editor.** Lo abre él, desde el panel de Archivos de Claude Code — ahí se edita como en cualquier editor, sin salir de la app. Nada de ventanas brincando encima: TextEdit además recuerda lo que tuvo abierto y puede resucitar llaves viejas.
-- Si su panel de Archivos no muestra la carpeta `.claude` (depende de dónde abrió Claude Code), ahí sí dale la ruta para Finder: **Cmd+Shift+G** y pega `~/.claude/skills/agente-viral/.env`.
+- **Tú NUNCA abras el archivo con `open`, TextEdit ni ningún editor**, ni le expliques cómo abrirlo. Él sabe (o alguien le está enseñando). Solo di "el archivo .env". Si pregunta dónde está, entonces sí: la ruta es `~/.claude/skills/agente-viral/.env`.
 
 Cuando avise que ya pegó y guardó:
 ```bash
