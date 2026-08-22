@@ -237,8 +237,8 @@ El guion va en el cuerpo de la página de la idea, en **una sola caja de código
 
 1. **Gancho** (8-9 segundos). El mismo de `Gancho Propuesto`, textual. Todo gancho es **dolor o promesa**, y abre un hueco de curiosidad que NO cierra ahí: cosa normal + cosa inesperada. Números grandes al frente, primera persona, tensión desde la primera palabra. Nada de *"tal vez"* ni *"si te sirve"* — ser inofensivo es ser invisible.
 2. **Cuerpo.** Entrega de verdad lo que el gancho prometió, en 3 o 4 movimientos cortos. Aquí va la mecánica que copiaste del viral, aterrizada al negocio del usuario: su cliente, lo que vende, con ejemplos concretos suyos.
-3. **Puente.** Una frase que conecta lo que acaba de decir con lo que ofrece, sin sonar a venta: *"Si quieres copiar esta estructura y no inventar desde cero…"*. Naturalidad, no salto.
-4. **Cierre.** Corto: qué hacer + qué obtiene. Si el usuario no tiene una oferta clara en su perfil, cierra pidiendo la interacción que le sirva (comentario, seguir, guardar) — nunca inventes un producto que no te dijo que tiene.
+3. **Puente.** Una frase que conecta lo que acabas de explicar con lo que sigue, sin que suene a venta. Sale del contenido mismo, no de una plantilla.
+4. **Cierre genérico, para que él lo adapte.** Corto: qué hacer + qué obtiene. Déjalo en una versión neutra (pedir un comentario, seguir, guardar) y avísale en una línea que ahí puede meter su propio cierre — su oferta, su link, lo que sea. ⛔ Nunca inventes un producto, un precio ni una promesa que él no te haya dicho.
 
 **Escribir para el OÍDO, no para el ojo** — un video se escucha y nadie se regresa:
 
