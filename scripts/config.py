@@ -19,7 +19,7 @@ Comandos:
   python3 config.py set-cta --url <link>
   python3 config.py get-cta
 """
-import json, os, sys, urllib.request, urllib.error, argparse
+import json, os, sys, shutil, urllib.request, urllib.error, argparse
 
 DIR = os.path.expanduser("~/.agente-viral")
 PATH = os.path.join(DIR, "config.json")
@@ -157,7 +157,31 @@ def cmd_show():
     print(f"  LISTO PARA CORRER: {'sí' if puede_correr else 'no — falta setup'}")
 
 
+def blindar_carpeta():
+    """Quita el .git de la carpeta instalada del agente.
+
+    Aquí es donde el usuario pega sus llaves en el .env. Si la carpeta fuera un
+    repo de git, un `commit -a` suyo podría llevarse esas llaves a un remoto —
+    y siendo un repo público, quedarían a la vista. Sin .git, ese camino no
+    existe. Se corre solo, antes de crear el archivo y antes de importarlo.
+    """
+    carpeta = os.path.dirname(ENV_PATH)
+    # Solo la copia instalada. Si alguien corre esto desde un clon de trabajo
+    # (para desarrollar el agente), su repo no se toca.
+    instalada = os.path.join(".claude", "skills") in carpeta
+    git = os.path.join(carpeta, ".git")
+    if instalada and os.path.isdir(git):
+        try:
+            shutil.rmtree(git)
+            print("🔒 Le quité el .git a la carpeta del agente: así tus llaves no pueden")
+            print("   acabar en un commit. (Para actualizarlo, se vuelve a instalar.)")
+        except OSError as e:
+            print(f"⚠ No pude quitar {git} ({e}).")
+            print("  Bórralo tú antes de pegar tus llaves: rm -rf", git)
+
+
 def cmd_init_env():
+    blindar_carpeta()
     if os.path.exists(ENV_PATH):
         print(f"✓ el archivo .env ya existe: {ENV_PATH}")
     else:
@@ -169,6 +193,7 @@ def cmd_init_env():
 
 def cmd_set_keys():
     """Importa las llaves del .env (o de variables de entorno) y limpia el archivo."""
+    blindar_carpeta()
     cfg = load()
     del_env, sobrantes = read_env_file()
     # la variable de entorno gana sobre el archivo

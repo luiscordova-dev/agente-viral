@@ -32,7 +32,10 @@ Clona este repo, instálalo y preséntate: https://github.com/luiscordova-dev/ag
 
 ```bash
 git clone https://github.com/luiscordova-dev/agente-viral ~/.claude/skills/agente-viral
+rm -rf ~/.claude/skills/agente-viral/.git
 ```
+
+Ese segundo renglón importa: le quita el git a la carpeta instalada, que es donde vas a pegar tus llaves. Sin git, no hay forma de que se te vayan en un commit ni por accidente.
 
 Si te dice que la carpeta ya existe, pídele a Claude que la borre y lo reinstale — es más seguro que borrarla tú a mano.
 </details>

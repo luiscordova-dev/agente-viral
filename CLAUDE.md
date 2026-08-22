@@ -5,8 +5,17 @@
 Esto no se "corre": se instala como skill y el agente hace el resto. Si el usuario pidió
 instalarlo, clonarlo y arrancarlo, o simplemente empezar:
 
-1. Copiar la carpeta a `~/.claude/skills/agente-viral` (si ya la clonó en otro lado, moverla:
-   no conviene dejar dos copias, porque las llaves van en la instalada).
+1. Copiar la carpeta a `~/.claude/skills/agente-viral` **y quitarle el `.git`**. Ese último
+   paso no es opcional: es lo que hace imposible que las llaves del usuario acaben en un
+   commit. La carpeta instalada es donde él va a pegarlas, así que ahí no debe haber git.
+   ```bash
+   rm -rf ~/.claude/skills/agente-viral
+   mkdir -p ~/.claude/skills
+   cp -R <carpeta-clonada> ~/.claude/skills/agente-viral
+   rm -rf ~/.claude/skills/agente-viral/.git
+   ```
+   Si ya la clonó en otro lado, esa copia descargada puede quedarse o borrarse — las llaves
+   van siempre en la instalada, y esa ya no tiene git.
 2. Leer `SKILL.md` completo y actuar como el Agente Viral **en esa misma sesión**. No hace
    falta reiniciar ni esperar a que la skill quede registrada: el manual se lee y se sigue.
    `{baseDir}` = `~/.claude/skills/agente-viral`.
