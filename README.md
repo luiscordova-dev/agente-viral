@@ -11,6 +11,8 @@ Un agente de IA que trabaja en tu computadora. Le dices un nicho — cocina, fin
 
 Necesitas Claude Code ya instalado — el mapa que te trajo aquí lo deja listo. ¿Llegaste directo a esta página sin pasar por el mapa? Instala Claude Code primero: [claude.com/claude-code](https://claude.com/claude-code).
 
+> **Esto no se "ejecuta" como una app ni levanta un servidor.** Es un agente: se instala dentro de Claude Code y de ahí en adelante trabaja contigo por conversación. Instalarlo es una frase.
+
 ## Instálalo (pídeselo a Claude)
 
 Abre Claude Code y pégale esto:
@@ -87,7 +89,7 @@ Este repo es un agente completo, y puedes señalar cada parte:
 | **El objetivo** | "Encuentra los virales de este nicho y conviértelos en ideas para mí" |
 | **Sus herramientas** | Los robots de búsqueda (Apify), el lector de lo que se dice en cada video (Supadata), tu Notion |
 | **El bucle** | Busca → ve qué encontró → filtra → lee → clasifica → decide qué merece tu Notion y qué no |
-| **Sus instrucciones** | [SKILL.md](SKILL.md) — léelo: es el "manual de empleado" del agente, en español |
+| **Sus instrucciones** | [Su manual de trabajo](SKILL.md) — ábrelo: está escrito en español, y es lo que el agente lee para saber cómo actuar |
 | **Los frenos** | Confirma el hashtag contigo ANTES de gastar, valida las llaves antes de correr, y te dice el costo de cada corrida |
 
 Fíjate en la diferencia: el archivo [pipeline.py](scripts/pipeline.py) es la parte de receta (siempre hace lo mismo). Las decisiones — qué video es basura, qué hook funciona, qué idea te sirve — las toma la IA en cada corrida. Esa mezcla es un agente.
@@ -102,10 +104,10 @@ El sistema que acabas de armar — *buscar afuera → filtrar → analizar → e
 
 ¿Y para cambiarle el cerebro? Solo se tocan 2 archivos:
 
-1. **[SKILL.md](SKILL.md)** — las instrucciones del agente. Cambia el PASO 3 (cómo clasifica) y el PASO 5 (qué ideas genera) y tienes un agente distinto.
+1. **[Su manual de trabajo](SKILL.md)** — lo que el agente lee para saber qué hacer. Cambia el PASO 3 (cómo clasifica) y el PASO 5 (qué ideas genera) y tienes un agente distinto.
 2. **[reference/notion_schema.md](reference/notion_schema.md)** — las columnas de tus tablas. Agrega o quita columnas según lo que quieras guardar.
 
-Abre Claude Code y dile: *"lee el SKILL.md de agente-viral y ayúdame a adaptarlo para espiar competidores"*. Ese es el punto: ya entendiste el sistema, ahora Claude te ayuda a repetirlo.
+Abre Claude Code y dile: *"lee las instrucciones del Agente Viral y ayúdame a adaptarlo para espiar competidores"*. Ese es el punto: ya entendiste el sistema, ahora Claude te ayuda a repetirlo.
 
 ## Lo honesto (qué NO hace)
 
