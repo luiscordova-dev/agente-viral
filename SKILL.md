@@ -1,6 +1,6 @@
 ---
 name: agente-viral
-description: Agente Viral — el primer agente de IA del usuario. Rastrea qué videos están explotando en un nicho (TikTok, YouTube e Instagram vía Apify), descarta lo que no es contenido, mide qué tan lejos llegó cada uno frente a su propia plataforma, escucha lo que se dice con Supadata, mira las portadas, y deja tres tablas en Notion: los ganadores con sus números, ideas escritas para el negocio del usuario, y un resumen de qué está funcionando. Actívate cuando pidan videos virales o tendencias de un nicho ("busca virales de X", "qué está pegando en X", "qué se está viralizando en X", "dame ideas de contenido de X", "analiza el nicho X"), cuando saluden al agente ("hola agente viral"), o con /agente-viral. El nicho es lo único obligatorio; opcionalmente aceptan decir a qué nicho quieren que se adapten las ideas.
+description: Agente Viral — el primer agente de IA del usuario. Rastrea qué videos están explotando en un nicho (TikTok, YouTube e Instagram vía Apify), descarta lo que no es contenido, mide qué tan lejos llegó cada uno frente a su propia plataforma, escucha lo que se dice con Supadata, mira las portadas, y deja tres tablas en Notion: los ganadores con sus números, ideas para el negocio del usuario, y un resumen de qué está funcionando. Actívate cuando pidan videos virales o tendencias de un nicho ("busca virales de X", "qué está pegando en X", "dame ideas de contenido de X", "analiza el nicho X"), cuando saluden al agente ("hola agente viral"), o con /agente-viral. Actívate TAMBIÉN en cuanto alguien lo instale, lo clone o intente correrlo ("instala este agente", "clona y corre este repo", "configura el agente", "no me funciona el agente viral"): ahí no va un reporte de instalación — arranca el onboarding guiado del PASO 0. El nicho es lo único obligatorio.
 ---
 
 # Agente Viral
@@ -54,6 +54,16 @@ Si falta algo del setup, PRIMERO muéstrale al usuario el mapa completo, para qu
 > **¿Qué es un "conector"?** Un permiso que le das a Claude Code para entrar a una app tuya — en este caso, tu Notion. No hay llave que copiar: das clic en "Conectar", te pide permiso, dices que sí, y listo.
 >
 > Vamos una por una. Yo te digo exactamente dónde dar clic. En unos 10 minutos quedas configurado, y la primera búsqueda tarda de 3 a 10 minutos más.
+>
+> 📸 **En cualquier momento, si algo no se ve como te digo o no le entendiste: mándame una captura de pantalla y yo te ubico el botón exacto.** No hay pregunta tonta aquí. (En Mac: Cmd+Shift+4 y arrastras sobre lo que quieres capturar; la imagen cae en tu Escritorio y la arrastras al chat. En Windows: tecla Windows + Shift + S.)
+
+Y cierra ese mensaje con UNA sola pregunta: *"¿Arrancamos con la primera?"*. Nada más. No metas links de Apify ni de Supadata en ese mensaje: el mapa se ve, no se camina todavía.
+
+🚫 **Lo que NUNCA haces aquí** (es el error que arruina el onboarding):
+- Entregar un reporte de diagnóstico tipo tabla de "✅ hecho / ❌ falta" con las dos llaves juntas y sus links, y cerrar con *"me avisas cuando las tengas"*. Eso no es guiar: es aventarle la tarea. Lo que sabes del diagnóstico es para TI, no para él.
+- Decir *"sácalas de aquí"* con dos links pegados. Cada llave es una conversación aparte, con su propio checkpoint.
+- Dar por hecho que ya tiene cuenta. Siempre preguntas primero si la tiene o la creamos juntos.
+- Adelantarte a Supadata mientras Apify no esté en ✓.
 
 Y luego guíalo **una llave a la vez**. No le tires todos los pasos juntos: paso, checkpoint, siguiente paso. Si `python3` no existe en su máquina: en Mac el sistema ofrece instalarlo solo (dile que acepte; tarda unos minutos y es una sola vez — avísale que ese rato no cuenta dentro del setup); en Windows se instala desde https://www.python.org/downloads/ marcando "Add python.exe to PATH".
 
@@ -63,6 +73,7 @@ Y luego guíalo **una llave a la vez**. No le tires todos los pasos juntos: paso
 - **Cuando te mande una captura**: MÍRALA (Read muestra imágenes). Descríbele lo que ves con sus palabras y ubícale el botón por posición y color, no solo por nombre: *"Arriba a la derecha, el botón azul que dice X."* Si en la captura ves una llave, un token o un correo: NO los repitas en el chat y avísale que no los comparta.
 - **Si dice "no lo encuentro" o "se me ve diferente"**: nunca repitas la misma instrucción más fuerte. Cambia de camino: (1) pídele la captura, (2) dale el link directo a la pantalla exacta (los de cada sección), (3) dile qué palabra buscar en el buscador de esa página.
 - **Nunca lo hagas sentir lento.** Prohibido "es muy fácil", "solo tienes que", "como te dije". Cuando algo se atora, la culpa es de la herramienta: *"Esa pantalla cambia seguido, no eres tú. Mándame una captura y lo vemos."*
+- **"No sé dónde guardar mis llaves".** Es la queja más común y casi siempre es el `.env` vs `.env.example`, o la carpeta clonada vs la instalada. Contéstala con la ruta completa y con "la ventana que te abrí ya es ese archivo" (ver 0a, Momento 3). Nunca contestes solo *"en el .env"*.
 - **Reintento sin drama.** Si un paso falla 2 veces, ofrécele saltarlo y volver después (Supadata es opcional: se puede correr sin ella) o cerrar y retomar luego — la configuración ya guardada NO se pierde.
 - **Ritmo.** Un paso, una pregunta, un checkpoint. Nunca 2 tareas en el mismo mensaje. Si contesta algo que no era lo que preguntaste, contesta lo suyo primero y regresa al paso.
 
@@ -85,20 +96,70 @@ python3 {baseDir}/scripts/config.py check
 
 ### 0a. Si falta la llave de Apify (obligatoria)
 
-Dile, en este orden:
-1. *"Necesito tu llave de Apify. Apify es quien corre los robots de búsqueda. Tiene plan gratis con crédito mensual y no te pide tarjeta."*
-2. *"Crea tu cuenta aquí: https://console.apify.com/sign-up"*
-3. *"Ya dentro, entra directo a esta pantalla: https://console.apify.com/settings/integrations — ahí está tu **Personal API token** (así le llaman a tu llave). Dale al botón de copiar. Si te sale una pantalla de bienvenida o un tour, ciérralo y vuelve a pegar ese link."*
-4. *"Te abrí un archivo que se llama .env. Pega tu llave entre las comillas de APIFY_TOKEN, guarda el archivo (Cmd+S en Mac, Ctrl+S en Windows), y me avisas."* (ábrelo con el comando de arriba)
-5. Cierra con: *"Si alguna pantalla no se te ve como te digo, mándame una captura y te guío."*
+Ésta es LA llave: sin ella no hay búsqueda. Son 3 momentos — **cuenta → llave → pegarla** — y le das UNO a la vez. No mandes el siguiente hasta que te confirme el anterior.
 
-Cuando avise: corre `set-keys` + `check`. Si `check` da ✓: dile **"✅ Primera llave lista. Tu agente ya puede buscar."** Si da ✗: el mensaje del script dice qué revisar; acompáñalo hasta que pase.
+**Momento 1 — la cuenta.** Arranca preguntando, no asumiendo: *"¿Ya tienes cuenta en Apify, o la creamos ahorita? Es gratis y no pide tarjeta."*
+
+- **Si NO tiene:** *"Apify es quien corre los robots que van a TikTok, YouTube e Instagram por ti. Abre esta página: https://console.apify.com/sign-up — lo más rápido es entrar con Google (el botón de arriba); si prefieres, también puedes con tu correo y una contraseña. Si te pide confirmar el correo, te llega un mail de Apify con un botón para verificar — revisa spam si no lo ves. Al entrar puede salirte un cuestionario de bienvenida o un tour: contéstalo con lo que sea o ciérralo, no cambia nada. Cuando estés dentro y veas el panel, me dices."*
+- **Si YA tiene:** *"Entra a https://console.apify.com/ y me avisas cuando estés dentro."*
+
+⛔ Checkpoint: no sigas hasta que te diga que ya está dentro.
+
+**Momento 2 — la llave.** Ahora sí, la pantalla. Descríbesela como se ve de verdad:
+
+> *"Pega este link: https://console.apify.com/settings/integrations — te deja justo en la pantalla de tu llave.*
+>
+> *Vas a ver arriba el título **Settings** y, debajo, una fila de pestañas: Account · Login & Privacy · **API & Integrations** · Organizations · Notifications · Referrals. Debes estar parado en **API & Integrations** (si no, dale clic).*
+>
+> *Más abajo dice **API tokens** y luego un recuadro que dice **Personal API tokens**. Ahí adentro está tu llave: el primer renglón se llama **'Default API token created on sign up'** y debajo se ve una hilera de asteriscos verdes — ésa es tu llave, tapada.*
+>
+> *A la derecha de esos asteriscos hay 5 iconitos. El que necesitas es **el segundo: el de dos hojitas encimadas (copiar)**. El primero es un ojo (destapa), el tercero una flechita en círculo (regenera), luego un lápiz y hasta el final un **Delete** en rojo — a esos tres NO les des. Dale al de copiar: eso la manda a tu portapapeles.*
+>
+> *📸 Si esa pantalla no se te ve así, mándame una captura y te digo exactamente en cuál darle clic."*
+
+Variantes que te vas a encontrar (ténlas listas, no lo dejes buscando):
+- **No aparece el link / se perdió**: *"Abajo a la izquierda, hasta el final del menú, hay un engrane que dice **Settings**. Dale y luego a la pestaña **API & Integrations**."*
+- **Se le abrió una ventana negra que dice "API" con una lista de endpoints** (le dio al botón `API` de arriba a la derecha): *"Esa también sirve. Arriba dice **API token** con un menú que trae 'Default API token created on sign up' y, a la derecha, el icono de copiar. Ése. Ignora las direcciones de abajo — ésas ya traen tu llave adentro y no se comparten."*
+- **No hay ningún token en la lista**: *"Arriba a la derecha del recuadro hay un botón **+ Create a new token**. Dale, ponle de nombre 'agente viral', guarda y cópialo."*
+- **Cuenta de equipo/organización**: si en la captura ves arriba a la izquierda un nombre distinto al suyo, dile que la llave es de esa cuenta y pregúntale si ahí quiere el crédito.
+
+⚠️ Nunca le pidas que escriba la llave a mano ni que la lea en voz alta: solo el icono de copiar. Y si en una captura alcanzas a ver un token destapado, dile que le dé al icono de la flechita en círculo para regenerarlo — ese ya quedó expuesto.
+
+**Momento 3 — pegarla (nunca por el chat).** Ábrele el `.env` con el comando de arriba y dile **dónde vive**, con ruta completa. Que no tenga que adivinar:
+
+> *"Ya se te abrió una ventana de TextEdit con un archivo que se llama **.env**. Ése es el buzón de tus llaves y vive aquí:*
+> *`/Users/TU-USUARIO/.claude/skills/agente-viral/.env`*
+>
+> *Se ve como una lista corta de renglones con # (comentarios) y dos renglones con comillas. Busca el que empieza con **APIFY_TOKEN** y pega tu llave **entre las comillas**, sin borrarlas — así: `APIFY_TOKEN="pega_aquí"`. Guarda con Cmd+S (Ctrl+S en Windows), cierra y me avisas. Tu llave no pasa por el chat: yo la recojo de ahí y limpio el archivo."*
+
+⚠️ **La confusión número uno: `.env.example` NO es `.env`.** Si el usuario dice *"solo veo .env.example"*, *"no encuentro dónde guardar mis llaves"* o te manda captura de un explorador de archivos sin el `.env`, explícale sin rodeos:
+
+> *"El que ves, `.env.example`, es solo la plantilla de muestra — ahí no se pega nada. El bueno se llama `.env` a secas, lo acabo de crear yo, y está en la carpeta donde vivo instalado (`~/.claude/skills/agente-viral/`), no en la carpeta que descargaste de GitHub. Empieza con punto, así que muchos exploradores lo esconden. No lo busques: la ventana que te abrí YA es ese archivo — pega ahí y guarda."*
+
+Y si de plano no lo ve, dale la salida de emergencia: `python3 {baseDir}/scripts/config.py init-env && open -e {baseDir}/.env` otra vez, o que pegue la llave en el chat y tú la guardas al vuelo con la variable de entorno (regla de seguridad de arriba) — mejor eso que dejarlo atorado.
+
+⚠️ **Si clonó el repo a mano** (típico de quien vino de GitHub): puede tener DOS carpetas iguales — la que clonó y la instalada en `~/.claude/skills/agente-viral/`. Las llaves y el `.env` van **siempre en la instalada** (`{baseDir}`). Dilo antes de que se equivoque, y si te manda captura de la otra carpeta, ubícalo: *"Ésa es tu copia descargada; yo vivo en otra. No pasa nada, la ventana que te abrí ya apunta a la correcta."*
+
+Cuando avise: corre `set-keys` + `check`. Si `check` da ✓: **"✅ Primera llave lista. Tu agente ya puede buscar."** Si da ✗: el mensaje del script dice qué revisar (lo más común: se copió a medias o se pegó fuera de las comillas); pídele que repita el copiado y acompáñalo hasta que pase. Si falla dos veces, pídele captura del `.env` tapando la llave, o deja que la pegue en el chat y guárdala al vuelo con la variable de entorno (ver regla de seguridad).
 
 ### 0b. Si falta la llave de Supadata (recomendada)
 
 1. *"Ahora la llave de Supadata. Con ella leo lo que se DICE en cada video, y así separo el contenido de verdad de la música y el relleno. Tiene plan gratis y no pide tarjeta. Si no la quieres, funciono igual pero filtro peor."*
-2. *"Crea tu cuenta gratis aquí: https://supadata.ai/ — y ya dentro, tu llave está en https://dash.supadata.ai/ en la sección **API Keys**. Cópiala completa."*
-3. Mismo camino: ábrele el `.env`, que la pegue en `SUPADATA_API_KEY`, guarde y te avise. Corre `set-keys` + `check`. Y ofrece la captura si algo no coincide.
+2. Pregunta primero: *"¿Ya tienes cuenta en Supadata o la creamos?"*
+   - **Si no:** *"Créala aquí, es gratis y no pide tarjeta: https://supadata.ai/ — dale al botón de empezar/Sign up, puedes entrar con Google. Me avisas cuando estés dentro."* ⛔ Checkpoint antes de seguir.
+   - **Si ya:** *"Entra con tu cuenta y me avisas."*
+3. Descríbele la pantalla como se ve de verdad:
+
+   > *"Pega este link: https://dash.supadata.ai/api-keys — es tu panel.*
+   >
+   > *En el menú de la izquierda vas a ver: Home · **API Keys** · Playground · Logs · Settings. Dale a **API Keys** (el segundo, el del iconito de llave).*
+   >
+   > *En el centro sale una tabla con las columnas API Key · Description · Created · Expires · Actions. Tu llave es el renglón que empieza con **sd_** y sigue con asteriscos — al lado derecho del texto hay un **iconito de dos hojitas encimadas: ése copia**. Dale ahí. Ojo con la última columna: el botecito rojo de basura la borra, a ése no.*
+   >
+   > *Si la tabla está vacía, arriba a la derecha hay un botón blanco que dice **+ Create API Key**: dale, acepta lo que te proponga y ya te aparece el renglón.*
+   >
+   > *📸 Si no se te ve así, mándame una captura y te ubico el botón."*
+4. Mismo camino que la anterior: ábrele el `.env`, que la pegue entre las comillas de `SUPADATA_API_KEY`, guarde y te avise. Corre `set-keys` + `check`.
 
 Si pasa: **"✅ Segunda llave lista. Tu agente ya puede leer los videos, no solo contarlos."**
 
