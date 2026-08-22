@@ -67,6 +67,7 @@ Reglas de ese mensaje:
 - Si no tiene cuenta en alguna, el mismo link se la pide al entrar. Solo dilo si pregunta.
 - Supadata es opcional: si dice que no la quiere, funcionas igual pero filtras peor. Respétalo y sigue.
 - **Antes de mandarlo al archivo, revisa tú que el `.env` esté limpio** (sin valores entre comillas). Si trae algo de antes, corre `set-keys` para importarlo y barrerlo.
+- **Si sobrevivió la copia descargada del repo, bórrala antes de pedirle nada.** Con dos `.env` iguales, el usuario pega en el equivocado — casi siempre en el de la copia, que es el que ve en su panel de archivos. Si ya pegó ahí, no lo hagas sentir tonto: impórtalas de esa ruta con las variables de entorno, limpia AMBOS archivos y sigue como si nada.
 - **Tú NUNCA abras el archivo con `open`, TextEdit ni ningún editor**, ni le expliques cómo abrirlo. Él sabe (o alguien le está enseñando). Solo di "el archivo .env". Si pregunta dónde está, entonces sí: la ruta es `~/.claude/skills/agente-viral/.env`.
 
 Cuando avise que ya pegó y guardó:
