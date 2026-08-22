@@ -51,6 +51,8 @@ CREATE TABLE (
 
 Cada fila es una idea lista para grabar. `Video que la Inspiro` es una RELATION que apunta al `data_source_id` de la tabla Lista — hay que sustituir `<LISTA_DS>` por el que devolvió al crearla.
 
+📝 **El guion completo NO es una columna: va como CONTENIDO de la página de cada idea** — gancho, cuerpo, puente y cierre en una sola caja de código, y debajo la mini shot-list. Así la tabla se lee de un vistazo y el guion está a un clic. Cómo se escribe: `SKILL.md` §PASO 5b.
+
 ```sql
 CREATE TABLE (
 "Idea" TITLE,

@@ -7,7 +7,7 @@ Un agente de IA que trabaja en tu computadora. Le dices un nicho — cocina, fin
 3. **Lee lo que se dice** en cada video para quedarse con contenido de verdad.
 4. **Mira la portada** de cada finalista y lee el gancho visual: el texto en pantalla y lo que se ve en el primer segundo — lo que detiene el scroll.
 5. **Detecta a las cuentas chicas que la rompieron**: videos con muchas más vistas que seguidores tiene su autor. Esos ganaron por el formato, no por la fama — y son los que tú sí puedes copiar.
-6. **Te deja 3 tablas en tu Notion**: los virales con sus números, ideas escritas para tu negocio y tu cliente, y el análisis de qué está funcionando.
+6. **Te deja 3 tablas en tu Notion**: los virales con sus números, ideas para tu negocio **con el guion completo adentro de cada una** —listo para leer a cámara—, y el análisis de qué está funcionando.
 
 Necesitas Claude Code ya instalado — el mapa que te trajo aquí lo deja listo. ¿Llegaste directo a esta página sin pasar por el mapa? Instala Claude Code primero: [claude.com/claude-code](https://claude.com/claude-code).
 
@@ -111,7 +111,7 @@ Abre Claude Code y dile: *"lee las instrucciones del Agente Viral y ayúdame a a
 ## Lo honesto (qué NO hace)
 
 - **Vive en tu computadora y corre cuando tú se lo pides.** Es tu primer agente.
-- **No publica contenido.** Te da las ideas; grabar y publicar sigue siendo tuyo.
+- **No publica contenido.** Te da las ideas con su guion escrito; grabar y publicar sigue siendo tuyo.
 - **Depende de servicios externos.** Si TikTok cambia sus reglas o Apify falla, esa corrida sale coja. El agente te avisa en español, sin drama.
 - **Los hashtags chicos dan resultados chicos.** Si tu nicho es muy de nicho, el agente te propondrá hashtags más grandes del mismo tema.
 - **De YouTube también llegan videos largos.** Los cortos salen de TikTok e Instagram; los formatos largos que funcionan también son oro para sacar ideas.
