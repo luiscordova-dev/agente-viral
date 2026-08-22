@@ -47,11 +47,31 @@ UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML,
 DEFAULT_CTA_URL = "https://lu.ma/luiscordova"
 
 
-def read_env_file():
-    """Lee el .env de la raíz del repo. Devuelve (llaves reconocidas, líneas sin reconocer)."""
+def env_candidatos():
+    """Todos los .env donde el usuario pudo haber pegado sus llaves.
+
+    Es normal que exista más de una copia de la carpeta (la instalada y la que
+    se descargó de GitHub), y el usuario pega en la que ve en su panel de
+    archivos, no necesariamente en la instalada. Buscar en todas evita el error
+    tonto de decirle "no encontré ninguna llave" cuando sí la pegó.
+    """
+    vistos, rutas = set(), []
+    for base in (os.path.dirname(ENV_PATH), os.getcwd(),
+                 os.path.join(os.getcwd(), "agente-viral"),
+                 os.path.expanduser("~/.claude/skills/agente-viral")):
+        ruta = os.path.abspath(os.path.join(base, ".env"))
+        if ruta not in vistos and os.path.isfile(ruta):
+            vistos.add(ruta)
+            rutas.append(ruta)
+    return rutas
+
+
+def read_env_file(ruta=None):
+    """Lee un .env. Devuelve (llaves reconocidas, líneas sin reconocer)."""
+    ruta = ruta or ENV_PATH
     keys, leftovers = {}, []
     try:
-        for line in open(ENV_PATH, encoding="utf-8"):
+        for line in open(ruta, encoding="utf-8"):
             line = line.strip()
             if not line or line.startswith("#") or "=" not in line:
                 continue
@@ -71,14 +91,14 @@ def read_env_file():
     except FileNotFoundError:
         pass
     except Exception:
-        print(f"⚠ No pude leer {ENV_PATH}. Revisa que sea texto plano.")
+        print(f"⚠ No pude leer {ruta}. Revisa que sea texto plano.")
     return keys, leftovers
 
 
-def clean_env_file():
+def clean_env_file(ruta=None):
     """Regresa el .env a su plantilla vacía (las llaves ya viven seguras en config)."""
     try:
-        with open(ENV_PATH, "w", encoding="utf-8") as f:
+        with open(ruta or ENV_PATH, "w", encoding="utf-8") as f:
             f.write(ENV_TEMPLATE)
         return True
     except Exception:
@@ -192,20 +212,32 @@ def cmd_init_env():
 
 
 def cmd_set_keys():
-    """Importa las llaves del .env (o de variables de entorno) y limpia el archivo."""
+    """Importa las llaves de cualquier .env (o de variables de entorno) y limpia los archivos."""
     blindar_carpeta()
     cfg = load()
-    del_env, sobrantes = read_env_file()
+
+    # Recorre TODOS los .env que existan: el instalado, el de la carpeta actual,
+    # el de una copia descargada. Gana el primero que traiga cada llave.
+    del_env, sobrantes, con_llaves = {}, [], []
+    for ruta in env_candidatos():
+        halladas, extras = read_env_file(ruta)
+        if halladas:
+            con_llaves.append(ruta)
+            for k, v in halladas.items():
+                del_env.setdefault(k, v)
+            sobrantes += extras
+
     # la variable de entorno gana sobre el archivo
     hallazgos = {
         "apify_token": os.environ.get("APIFY_TOKEN") or del_env.get("APIFY_TOKEN"),
         "supadata_api_key": os.environ.get("SUPADATA_API_KEY") or del_env.get("SUPADATA_API_KEY"),
     }
     if not any(hallazgos.values()):
+        revisados = "\n".join("    " + r for r in env_candidatos()) or "    (ninguno)"
         sys.exit("✗ No encontré ninguna llave que guardar.\n"
-                 "  Pega tu llave en el archivo .env (entre las comillas), guarda el archivo,\n"
-                 "  y vuelve a correr: python3 config.py set-keys\n"
-                 "  (Si no tienes el archivo: python3 config.py init-env)")
+                 "  Busqué en estos archivos y los vi vacíos:\n" + revisados + "\n"
+                 "  Pega tu llave entre las comillas, GUARDA el archivo (Cmd+S) y vuelve a correr:\n"
+                 "    python3 config.py set-keys")
     for campo, valor in hallazgos.items():
         if valor:
             cfg[campo] = valor.strip()
@@ -215,13 +247,17 @@ def cmd_set_keys():
         print("  (falta APIFY_TOKEN — pégala en el archivo .env y vuelve a correr set-keys)")
     if not hallazgos["supadata_api_key"]:
         print("  (falta SUPADATA_API_KEY — opcional)")
-    if del_env:
+
+    # Limpia TODAS las copias donde había llaves: ninguna se queda con la llave suelta.
+    for ruta in con_llaves:
         if sobrantes:
-            print(f"⚠ El .env trae líneas que no reconocí ({', '.join(sobrantes)}). No lo limpié — revísalo tú.")
-        elif clean_env_file():
-            print("✓ limpié el archivo .env — tus llaves ya viven seguras en", DIR)
+            print(f"⚠ {ruta} trae líneas que no reconocí ({', '.join(sorted(set(sobrantes)))}). No lo limpié — revísalo tú.")
+        elif clean_env_file(ruta):
+            print("✓ limpié", ruta)
         else:
-            print("⚠ No pude limpiar el .env — borra tú las llaves de ese archivo.")
+            print("⚠ No pude limpiar", ruta, "— borra tú las llaves de ese archivo.")
+    if con_llaves:
+        print("  tus llaves ya viven seguras en", DIR)
 
 
 def cmd_set_notion(a):
