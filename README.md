@@ -47,7 +47,7 @@ Si te dice que la carpeta ya existe, pídele a Claude que la borre y lo reinstal
 
 El agente te guía para sacar cada llave cuando lo saludes. Las tres cuentas son gratis y traen crédito incluido: las primeras corridas no te cuestan nada. Apify regala 5 dólares de crédito al mes y cada búsqueda completa gasta unos 70 centavos — te alcanza para unas 7 al mes sin pagar nada. ¿Quieres más cobertura? Pídele que revise más videos por plataforma — cuesta un poco más.
 
-🔒 **Tus llaves se quedan en tu computadora.** Se las pegas al agente en el chat y él las guarda al instante en una carpeta privada que solo tú puedes abrir. Nunca se suben a ningún lado ni se guardan en la nube. Y si algún día quieres cortar el acceso, las borras en Apify o Supadata y quedan muertas al momento.
+🔒 **Tus llaves nunca salen de tu computadora.** El agente te abre un archivo, tú las pegas ahí, él las guarda en una carpeta privada que solo tú puedes abrir y limpia el archivo. Nunca se suben a ningún lado ni pasan por el chat. Y si un día quieres cortar el acceso, las borras en Apify o Supadata y quedan muertas al momento.
 
 También necesitas **Python 3** — ya viene en macOS y Linux. Si tu Mac te ofrece instalarlo la primera vez, acepta y espera.
 

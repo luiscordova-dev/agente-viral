@@ -37,7 +37,7 @@ ENV_TEMPLATE = '''# 🔑 Pega tus llaves entre las comillas y guarda este archiv
 APIFY_TOKEN=""
 
 # Tu llave de Supadata (allá le llaman "API key")
-# Se copia en: https://dash.supadata.ai/ → API Keys
+# Se copia en: https://dash.supadata.ai/api-keys
 SUPADATA_API_KEY=""
 '''
 
@@ -164,7 +164,6 @@ def cmd_init_env():
         with open(ENV_PATH, "w", encoding="utf-8") as f:
             f.write(ENV_TEMPLATE)
         print(f"✓ archivo .env creado: {ENV_PATH}")
-    print("  (Solo si prefieres el archivo. Lo normal es pegarle la llave al agente en el chat.)")
     print("  Pega tus llaves entre las comillas, guarda, y corre: python3 config.py set-keys")
 
 
@@ -179,16 +178,16 @@ def cmd_set_keys():
     }
     if not any(hallazgos.values()):
         sys.exit("✗ No encontré ninguna llave que guardar.\n"
-                 "  Lo normal es pasarla así, en el mismo comando:\n"
-                 '    APIFY_TOKEN="tu-llave" python3 config.py set-keys\n'
-                 "  (Y si prefieres el archivo: python3 config.py init-env, pegas la llave ahí y repites.)")
+                 "  Pega tu llave en el archivo .env (entre las comillas), guarda el archivo,\n"
+                 "  y vuelve a correr: python3 config.py set-keys\n"
+                 "  (Si no tienes el archivo: python3 config.py init-env)")
     for campo, valor in hallazgos.items():
         if valor:
             cfg[campo] = valor.strip()
     save(cfg)
     print("✓ llaves guardadas en", PATH)
     if not hallazgos["apify_token"]:
-        print('  (falta APIFY_TOKEN — pásala así: APIFY_TOKEN="tu-llave" python3 config.py set-keys)')
+        print("  (falta APIFY_TOKEN — pégala en el archivo .env y vuelve a correr set-keys)")
     if not hallazgos["supadata_api_key"]:
         print("  (falta SUPADATA_API_KEY — opcional)")
     if del_env:

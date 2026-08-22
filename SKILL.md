@@ -55,7 +55,7 @@ Si falta algo del setup, PRIMERO muéstrale al usuario el mapa completo, para qu
 > | [Supadata](https://supadata.ai/) | Lee lo que se dice en los videos | Una llave |
 > | [Notion](https://www.notion.so/) | Ahí viven tus tablas | Nada de llaves — solo darle permiso al conector de Notion |
 >
-> **¿Qué es una "llave"?** Una contraseña que esos servicios te dan para que yo pueda usarlos en tu nombre. Como la llave de tu casa: quien la tiene, entra. Me la vas a pegar aquí y yo la guardo de inmediato en una carpeta privada de tu computadora — no se sube a ningún lado. No es tu contraseña de la cuenta, y la puedes borrar o cambiar cuando quieras desde la página del servicio.
+> **¿Qué es una "llave"?** Una contraseña que esos servicios te dan para que yo pueda usarlos en tu nombre. Como la llave de tu casa: quien la tiene, entra. Por eso nunca la escribes en el chat: te abro un archivo que vive solo en tu computadora, la pegas ahí, yo la guardo en una carpeta privada y limpio el archivo. No es tu contraseña de la cuenta, y la puedes borrar o cambiar cuando quieras desde la página del servicio.
 >
 > **¿Qué es un "conector"?** Un permiso que le das a Claude Code para entrar a una app tuya — en este caso, tu Notion. No hay llave que copiar: das clic en "Conectar", te pide permiso, dices que sí, y listo.
 >
@@ -79,42 +79,41 @@ Y luego guíalo **una llave a la vez**. No le tires todos los pasos juntos: paso
 - **Cuando te mande una captura**: MÍRALA (Read muestra imágenes). Descríbele lo que ves con sus palabras y ubícale el botón por posición y color, no solo por nombre: *"Arriba a la derecha, el botón azul que dice X."* Si en la captura ves una llave, un token o un correo: NO los repitas en el chat y avísale que no los comparta.
 - **Si dice "no lo encuentro" o "se me ve diferente"**: nunca repitas la misma instrucción más fuerte. Cambia de camino: (1) pídele la captura, (2) dale el link directo a la pantalla exacta (los de cada sección), (3) dile qué palabra buscar en el buscador de esa página.
 - **Nunca lo hagas sentir lento.** Prohibido "es muy fácil", "solo tienes que", "como te dije". Cuando algo se atora, la culpa es de la herramienta: *"Esa pantalla cambia seguido, no eres tú. Mándame una captura y lo vemos."*
-- **"¿Dónde guardo mis llaves?"** La respuesta es una sola y siempre la misma: *"Aquí, me la pegas en el chat y yo la guardo."* No lo mandes a buscar archivos ni carpetas — esa vuelta es la que lo pierde.
+- **"¿Dónde guardo mis llaves?"** Nunca contestes solo *"en el .env"*. Contesta con la ruta completa y con *"la ventana que te abrí ya es ese archivo"*. Es la queja más común del setup.
 - **Reintento sin drama.** Si un paso falla 2 veces, ofrécele saltarlo y volver después (Supadata es opcional: se puede correr sin ella) o cerrar y retomar luego — la configuración ya guardada NO se pierde.
 - **Ritmo.** Un paso, una pregunta, un checkpoint. Nunca 2 tareas en el mismo mensaje. Si contesta algo que no era lo que preguntaste, contesta lo suyo primero y regresa al paso.
 
-**Regla de seguridad**: la llave se guarda **en el mismo turno** en que llega, y **nunca se repite de vuelta** — ni completa, ni el pedacito del final, ni "para confirmar". Siempre entra como variable de entorno, jamás como argumento suelto (así no queda escrita en el historial de comandos de su computadora).
+**Regla de seguridad**: las llaves NUNCA van en el chat. Van en un archivo `.env` que vive solo en su computadora: tú se lo creas y se lo abres, él pega, tú lo importas con `set-keys` y el script limpia el archivo solo. Si de todos modos pega una llave en el chat, no lo regañes: guárdala al vuelo con `APIFY_TOKEN="<llave>" python3 {baseDir}/scripts/config.py set-keys` (variable de entorno, nunca argumento suelto), no la repitas de vuelta, y dile que cuando pueda genere una llave nueva en la plataforma — la que pegó queda en el historial de la conversación.
 
-### Cómo entran las llaves: te la pega en el chat y tú la guardas al instante
+### Cómo entran las llaves: por el archivo `.env` que ya trae el repo
 
-Nada de abrirle archivos de texto ni mandarlo a buscar carpetas. Él copia su llave, te la pega aquí, y tú la guardas en ese mismo momento:
+El repo **ya viene con el archivo `.env`** — no hay que crearlo ni buscarlo, solo abrirlo. Ábrelo **antes** de mandarlo a copiar la llave, para que la ventana ya lo esté esperando:
 
 ```bash
-APIFY_TOKEN="<lo que pegó>" python3 {baseDir}/scripts/config.py set-keys
+open -e {baseDir}/.env
 ```
 
-Para Supadata es igual, con `SUPADATA_API_KEY="<lo que pegó>"`. Si te pega las dos juntas, van las dos variables en el mismo comando. Luego confirma que sirven:
+(Si `open` no existe: en Linux que lo abra con su editor; en Windows, `notepad {baseDir}\.env`. Y si el archivo no apareciera por lo que sea, `python3 {baseDir}/scripts/config.py init-env` lo vuelve a crear.)
 
+Explícaselo **con ruta completa**. Nunca digas solo *"pégala en el .env"*:
+
+> *"Se te abrió una ventana de TextEdit con un archivo que se llama **.env**. Ése es el buzón de tus llaves y vive aquí:*
+> *`~/.claude/skills/agente-viral/.env`*
+>
+> *Adentro hay renglones que empiezan con # (son notas) y dos renglones con comillas. Pega tu llave **entre las comillas** del que te toca, sin borrarlas — así queda: `APIFY_TOKEN="tu-llave"`. Guarda con **Cmd+S** (Ctrl+S en Windows) y me avisas."*
+
+⚠️ **Si clonó el repo a mano**, puede tener DOS carpetas iguales: la que descargó y la instalada en `~/.claude/skills/agente-viral/`. Las llaves van **siempre en la instalada** — que es la que abre el comando de arriba. Si te manda captura de la otra carpeta, ubícalo sin hacerlo sentir tonto: *"Ésa es tu copia descargada; yo vivo en otra. La ventana que te abrí ya apunta a la correcta."*
+
+Cuando avise que ya guardó, importa y verifica:
 ```bash
+python3 {baseDir}/scripts/config.py set-keys
 python3 {baseDir}/scripts/config.py check
 ```
-
-Cuando te llegue una llave:
-- **Guárdala de inmediato**, en ese mismo turno. Nunca la dejes "para el siguiente paso".
-- **No la repitas de vuelta** en tu respuesta.
-- Confirma con una línea: *"✓ Guardada. Ya vive en una carpeta privada de tu computadora, no se sube a ningún lado."*
-- Y avísale UNA sola vez, sin regaño y sin alarma: *"Como pasó por el chat, se queda en el historial de esta conversación. Si algún día quieres, la borras en Apify y generas otra — no es urgente."*
-- Si `check` sale ✗, casi siempre se copió a medias: pídele que le dé otra vez al botón de copiar y te la pegue completa.
-
-**Solo si el usuario dice que prefiere no pegarla en el chat** — algunos lo piden, y está bien — usas el camino del archivo:
-```bash
-python3 {baseDir}/scripts/config.py init-env && open -e {baseDir}/.env
-```
-Se le abre en TextEdit: que la pegue entre las comillas del renglón que toca, guarde con Cmd+S, y tú corres `set-keys` sin variables — el script la importa y limpia el archivo solo. Ese archivo se llama `.env` y vive en `{baseDir}`; no es el `.env.example` que ve en la carpeta que clonó.
+`set-keys` guarda las llaves en `~/.agente-viral/` (carpeta privada que solo su usuario abre) y **limpia el `.env` solo**. Si avisa que el archivo trae líneas que no reconoció y no lo limpió, límpialo tú (regrésalo a la plantilla de `init-env`) para que la llave no quede regada. Si `check` sale ✗, casi siempre se copió a medias o se pegó fuera de las comillas: ábrele el archivo otra vez y acompáñalo.
 
 ### 0a. Si falta la llave de Apify (obligatoria)
 
-Ésta es LA llave: sin ella no hay búsqueda. Son 3 momentos —**entrar → copiar → pegármela**— y le das UNO a la vez, con checkpoint entre cada uno.
+Ésta es LA llave: sin ella no hay búsqueda. Son 3 momentos —**entrar → copiar → pegarla en el archivo**— y le das UNO a la vez, con checkpoint entre cada uno.
 
 **Momento 1 — un solo link.** No lo mandes primero a crear la cuenta y después a otra pantalla distinta: brincar de link en link es la confusión número uno. Das UN link y la página se encarga del resto:
 
@@ -138,9 +137,11 @@ Se le abre en TextEdit: que la pegue entre las comillas del renglón que toca, g
 >
 > *📸 Si no se te ve así, mándame una captura y te digo exactamente en cuál darle clic."*
 
-**Momento 3 — que te la pegue.** Cierra con: *"Cuando la tengas copiada, pégamela aquí en el chat y yo la guardo."*
+**Momento 3 — pegarla en el archivo.** Antes de pedirle que la pegue, córrele el comando que crea y abre el `.env` (sección de arriba) para que la ventana ya esté lista. Luego:
 
-En cuanto la pegue, guárdala al instante y confirma según las reglas de la sección de arriba. Si `check` da ✓: **"✅ Primera llave lista. Tu agente ya puede buscar."**
+> *"Ya que la tengas copiada, pégala en la ventana de TextEdit que te acabo de abrir: en el renglón que empieza con **APIFY_TOKEN**, entre las comillas. Guarda con Cmd+S y me avisas."*
+
+Cuando avise, corre `set-keys` + `check`. Si `check` da ✓: **"✅ Primera llave lista. Tu agente ya puede buscar."**
 
 ### 0b. Si falta la llave de Supadata (recomendada)
 
@@ -156,7 +157,7 @@ En cuanto la pegue, guárdala al instante y confirma según las reglas de la sec
    > *Si la tabla está vacía, arriba a la derecha hay un botón blanco **+ Create API Key**: dale y te aparece el renglón.*
    >
    > *📸 Si no se te ve así, mándame una captura."*
-3. *"Cuando la tengas copiada, pégamela aquí y yo la guardo."* — y la guardas al instante con `SUPADATA_API_KEY=...`.
+3. Mismo camino que la anterior: ábrele el `.env`, que la pegue entre las comillas de **SUPADATA_API_KEY**, guarde con Cmd+S y te avise. Corre `set-keys` + `check`.
 
 Si pasa: **"✅ Segunda llave lista. Tu agente ya puede leer los videos, no solo contarlos."**
 
@@ -349,7 +350,7 @@ Si el usuario pregunta algo que NO está aquí, dile la verdad — *"no lo sé d
 **Notion**
 - Gratis para uso personal. No hay llave: el permiso se quita cuando quiera desde la configuración de Notion o desde Settings → Connectors de Claude Code.
 
-**"¿Es seguro darte mi llave?"** — contesta esto, sin adornar: *"Tu llave se guarda en una carpeta privada de tu computadora que solo tu usuario puede abrir. No se sube a ningún lado ni se guarda en la nube. Lo único: como me la pasas por el chat, queda también en el historial de esta conversación — por eso, si algún día quieres cortar por lo sano, entras a Apify o Supadata, la borras y generas otra. Queda muerta al instante."* Si prefiere no pegarla en el chat, ofrécele el camino del archivo.
+**"¿Es seguro darte mi llave?"** — contesta exactamente esto: *"Tus llaves nunca salen de tu computadora. Las pegas en un archivo de tu disco, yo las paso a una carpeta privada que solo tu usuario puede abrir, y limpio el archivo. No se suben a ningún lado, no pasan por el chat, y no se guardan en la nube. Si un día quieres cortar el acceso, borras la llave en Apify o Supadata y queda muerta al instante."*
 
 **"¿Se pierde si cambio de computadora?"** — sí: las llaves viven en esta máquina. En otra hay que volver a pegarlas (2 minutos), pero las cuentas y las tablas de Notion siguen igual.
 

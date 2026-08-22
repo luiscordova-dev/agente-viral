@@ -6,10 +6,11 @@ __pycache__/
 
 # credenciales (nunca subir)
 config.json
-.env
 .env.*
-# la plantilla SÍ se versiona (no trae llaves)
-!.env.example
+# El .env SÍ se versiona, vacío y con instrucciones: así quien clona el repo
+# ya lo tiene ahí para pegar sus llaves, sin buscar nada. El agente lo limpia
+# solo en cuanto las guarda en ~/.agente-viral/.
+!.env
 
 # macOS
 .DS_Store
