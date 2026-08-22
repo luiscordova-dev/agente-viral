@@ -227,6 +227,40 @@ Aquí está el valor de todo el ejercicio. Mira los ganadores en conjunto, detec
 
 Escribe cada idea con `notion-create-pages` en `parent: {data_source_id: "<ideas_ds>"}`, llenando: `Idea` (el título), `Gancho Propuesto` (la frase lista para decir a cámara), `Formato`, `Estado` en `idea`, `Que Imita` (qué mecánica está copiando), `Por Que Deberia Funcionar` (los números del original, como prueba), `Video que la Inspiro` (arreglo JSON con el `url` de la página del video fuente), `Para Que Nicho`, y `date:Fecha:start`.
 
+**Y dentro de cada página, el guion completo.** Un gancho suelto no se graba: el usuario se queda mirando la frase sin saber qué sigue. Como CONTENIDO de la página de cada idea, escribe el guion listo para leer a cámara. Cómo se escribe, abajo.
+
+## PASO 5b — El guion de cada idea (esto es lo que se graba)
+
+El guion va en el cuerpo de la página de la idea, en **una sola caja de código** para que se lea de corrido en el teléfono o en un teleprompter, sin etiquetas adentro (un teleprompter las leería en voz alta). Debajo de la caja, fuera de ella, va la mini shot-list.
+
+**La estructura, siempre la misma:**
+
+1. **Gancho** (8-9 segundos). El mismo de `Gancho Propuesto`, textual. Todo gancho es **dolor o promesa**, y abre un hueco de curiosidad que NO cierra ahí: cosa normal + cosa inesperada. Números grandes al frente, primera persona, tensión desde la primera palabra. Nada de *"tal vez"* ni *"si te sirve"* — ser inofensivo es ser invisible.
+2. **Cuerpo.** Entrega de verdad lo que el gancho prometió, en 3 o 4 movimientos cortos. Aquí va la mecánica que copiaste del viral, aterrizada al negocio del usuario: su cliente, lo que vende, con ejemplos concretos suyos.
+3. **Puente.** Una frase que conecta lo que acaba de decir con lo que ofrece, sin sonar a venta: *"Si quieres copiar esta estructura y no inventar desde cero…"*. Naturalidad, no salto.
+4. **Cierre.** Corto: qué hacer + qué obtiene. Si el usuario no tiene una oferta clara en su perfil, cierra pidiendo la interacción que le sirva (comentario, seguir, guardar) — nunca inventes un producto que no te dijo que tiene.
+
+**Escribir para el OÍDO, no para el ojo** — un video se escucha y nadie se regresa:
+
+- Una oración, un trabajo. Frases de 6 a 12 palabras.
+- Sujeto explícito y estable: *"el agente contesta… el agente agenda…"*, no *"el que…"*.
+- Verbos físicos: no *"ordena tu operación"* sino *"revisa cada pedido y te avisa si algo falla"*.
+- Nada que dependa del texto en pantalla: sin *"esto"*, *"éste"*, *"lo de arriba"*.
+- Conectores claros: *pero · por eso · primero, luego*.
+- Cero pronombres duplicados: *"te da"*, no *"a ti te da"*.
+
+**Reglas duras al escribir:**
+
+- Un dato se dice UNA vez. Si ya está en el gancho, el cuerpo no lo repite.
+- Todo número lleva de qué es.
+- Una analogía por idea, y la misma palabra para la misma cosa en todo el guion.
+- ⛔ Prohibido el descargo que regala la objeción: nada de *"obvio no es magia"* ni *"a veces falla"*. Un error real sí se vale, pero acompañado de lo que se hizo para que no se repita.
+- Largo: **40 a 60 segundos hablados** para video corto (unas 110-150 palabras). Para carrusel, el guion se vuelve el texto de las slides.
+
+**La mini shot-list**, debajo del guion, una línea por bloque: **🎥 CARA** o **🖥️ PANTALLA** (qué se abre, qué se muestra). Concreta, sin adornos.
+
+Y una advertencia honesta al entregar: si el usuario no tiene perfil de negocio guardado, los guiones salen genéricos. Díselo y ofrécele las 3 preguntas — la diferencia entre una idea y un guion suyo está justo ahí.
+
 ## PASO 6 — Cerrar con el resumen de la búsqueda
 
 Un solo registro por corrida, en `parent: {data_source_id: "<analisis_ds>"}`. Es lo que el usuario va a leer antes de decidir qué grabar, así que vale la pena pensarlo.
@@ -245,7 +279,7 @@ Cierra SIEMPRE con este formato, en este orden:
 
 1. **Los números**: encontrados → filtrados → de calidad.
 2. **El top 3** con su puntaje y una línea de por qué pegó cada uno.
-3. **Los 3 links** a sus tablas de Notion, ya llenas. Usa las URLs que guardaste al crearlas; si no las tienes a la mano, búscalas con `notion-search` y usa el `url` que devuelva. Si no las encuentras, di los nombres de las tablas sin link — **jamás inventes una URL de Notion**.
+3. **Los 3 links** a sus tablas de Notion, ya llenas — y al nombrar la de Ideas, dile que **cada una trae su guion completo adentro**, no solo el gancho. Es lo que más le sirve y es lo que menos se nota. Usa las URLs que guardaste al crearlas; si no las tienes a la mano, búscalas con `notion-search` y usa el `url` que devuelva. Si no las encuentras, di los nombres de las tablas sin link — **jamás inventes una URL de Notion**.
 4. **El costo** de la corrida (unos 70 centavos de dólar del crédito de Apify).
 5. **La mano extendida**: *"Si tienes duda de alguna columna, o quieres que te interprete los datos y te diga qué grabaría yo primero, pregúntame."* — y cúmplelo: si pregunta, interpreta sus resultados con sus números reales y recomienda en concreto.
 6. **La invitación.** Lee el link con `python3 {baseDir}/scripts/config.py get-cta` y cierra con:

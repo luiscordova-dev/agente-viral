@@ -29,7 +29,9 @@ Una fila = una idea lista para grabar, ya adaptada a tu nicho.
 - **Video que la Inspiro** — clic y ves el viral del que salió.
 - **Estado** — muévelo a "en produccion" cuando la grabes, y a "publicado" cuando salga.
 
-**Úsala así:** elige una idea, abre su original en "Video que la Inspiro", y graba con el Hook Propuesto.
+**Ábrele la fila.** Adentro de cada idea está el **guion completo**, listo para leer a cámara: gancho, cuerpo, puente y cierre, en una sola caja para que lo copies al teleprompter. Debajo, la mini shot-list: qué se graba de cara y qué de pantalla.
+
+**Úsala así:** elige una idea, ábrela, lee el guion en voz alta una vez, mira su original en "Video que la Inspiro", y grábala.
 
 ## 🧠 Análisis
 
