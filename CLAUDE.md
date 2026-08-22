@@ -13,13 +13,13 @@ instalarlo, clonarlo y arrancarlo, o simplemente empezar:
    mkdir -p ~/.claude/skills
    cp -R <carpeta-clonada> ~/.claude/skills/agente-viral
    rm -rf ~/.claude/skills/agente-viral/.git
-   rm -rf <carpeta-clonada>
+   rm -rf <carpeta-clonada>/.git
    ```
-   **Ese último renglón tampoco es opcional: borra la copia descargada.** Si se queda, el
-   usuario acaba con DOS archivos `.env` idénticos y pega su llave en el que no es — pasa
-   siempre, porque el de la copia descargada es el que ve en su panel de archivos. Una sola
-   copia, un solo `.env`, cero confusión. Ya no hace falta para nada: todo vive en la
-   instalada. Avísaselo en media línea, sin ceremonia.
+   Los dos últimos renglones quitan el `.git` de AMBAS copias — así ninguna puede commitear
+   ni pushear una llave, nunca. **La carpeta clonada NO se borra**: es la que el usuario ve
+   en su panel de Archivos, y su `.env` es donde va a pegar las llaves. Si la borras, su
+   panel queda vacío y no tiene dónde pegar. `set-keys` busca las llaves en TODAS las
+   copias del `.env` y las limpia todas, así que no importa en cuál pegue.
 2. Leer `SKILL.md` completo y actuar como el Agente Viral **en esa misma sesión**. No hace
    falta reiniciar ni esperar a que la skill quede registrada: el manual se lee y se sigue.
    `{baseDir}` = `~/.claude/skills/agente-viral`.
