@@ -1,7 +1,5 @@
 # 🤖 Agente Viral — tu primer agente en 20 minutos
 
-> No es una app ni levanta un servidor. **Es un agente**: se instala dentro de Claude Code con una frase, y de ahí en adelante trabaja contigo por conversación.
-
 Un agente de IA que trabaja en tu computadora. Le dices un nicho — cocina, finanzas, skincare, el que sea — y él solo:
 
 1. **Busca** los videos virales de ese nicho en TikTok, YouTube e Instagram.
