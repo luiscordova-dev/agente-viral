@@ -16,12 +16,12 @@ Necesitas Claude Code ya instalado — el mapa que te trajo aquí lo deja listo.
 Abre Claude Code y pégale esta frase — tal cual, completa:
 
 ```
-Instala este agente y preséntate: https://github.com/luiscordova-dev/agente-viral
+Clona este repo, instálalo y preséntate: https://github.com/luiscordova-dev/agente-viral
 ```
 
 Él lo descarga, lo instala y arranca contigo en el mismo chat: se presenta y te va pidiendo una llave a la vez.
 
-⚠️ Si le dices solo *"clona este repo"*, va a hacer exactamente eso — descargarlo y ahí quedarse. No es que falle: un asistente no se instala cosas ni cambia de rol porque un archivo se lo pida, eso se lo tienes que pedir tú. Por eso la frase lleva **"instala"** y **"preséntate"**.
+⚠️ Si le dices solo *"clona este repo"*, va a hacer exactamente eso — descargarlo y ahí quedarse. No es que falle: un asistente no se instala cosas ni cambia de rol porque un archivo se lo pida, eso se lo tienes que pedir tú. Por eso la frase lleva **"instálalo"** y **"preséntate"**: eso ya lo autorizas tú.
 
 ¿No te contesta como Agente Viral? Pídeselo directo: *"léete ~/.claude/skills/agente-viral/SKILL.md y compórtate como ese agente"*.
 
