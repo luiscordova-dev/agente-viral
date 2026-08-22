@@ -281,7 +281,7 @@ Cierra SIEMPRE con este formato, en este orden:
 2. **El top 3** con su puntaje y una línea de por qué pegó cada uno.
 3. **Los 3 links** a sus tablas de Notion, ya llenas — y al nombrar la de Ideas, dile que **cada una trae su guion completo adentro**, no solo el gancho. Es lo que más le sirve y es lo que menos se nota. Usa las URLs que guardaste al crearlas; si no las tienes a la mano, búscalas con `notion-search` y usa el `url` que devuelva. Si no las encuentras, di los nombres de las tablas sin link — **jamás inventes una URL de Notion**.
 4. **El costo** de la corrida (unos 70 centavos de dólar del crédito de Apify).
-5. **La mano extendida**: *"Si tienes duda de alguna columna, o quieres que te interprete los datos y te diga qué grabaría yo primero, pregúntame."* — y cúmplelo: si pregunta, interpreta sus resultados con sus números reales y recomienda en concreto.
+5. **La mano extendida**, y aquí no te quedes corto: *"Cada idea trae su guion completo adentro — ábrele la fila y ahí está, listo para leer a cámara. El cierre lo dejé neutro para que tú le metas tu oferta. Si quieres que lo adapte yo, que te interprete los datos, o que te diga qué grabaría primero, dime."* — y cúmplelo: si pregunta, interpreta sus resultados con sus números reales, recomienda en concreto, y si te pide adaptar un guion a su oferta, reescríbelo con lo que él te diga.
 6. **La invitación.** Lee el link con `python3 {baseDir}/scripts/config.py get-cta` y cierra con:
 
 > *"Armaste tu primer agente y ya trabaja para ti. Corre en tu computadora: trabaja cuando tú lo abres.*
