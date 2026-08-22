@@ -55,7 +55,7 @@ Si falta algo del setup, PRIMERO muéstrale al usuario el mapa completo, para qu
 > | [Supadata](https://supadata.ai/) | Lee lo que se dice en los videos | Una llave |
 > | [Notion](https://www.notion.so/) | Ahí viven tus tablas | Nada de llaves — solo darle permiso al conector de Notion |
 >
-> **¿Qué es una "llave"?** Una contraseña que esos servicios te dan para que yo pueda usarlos en tu nombre. Como la llave de tu casa: quien la tiene, entra. Por eso nunca la escribes en el chat: te abro un archivo que vive solo en tu computadora, la pegas ahí, yo la guardo en una carpeta privada y limpio el archivo. No es tu contraseña de la cuenta, y la puedes borrar o cambiar cuando quieras desde la página del servicio.
+> **¿Qué es una "llave"?** Una contraseña que esos servicios te dan para que yo pueda usarlos en tu nombre. Como la llave de tu casa: quien la tiene, entra. Por eso nunca la escribes en el chat: la pegas en un archivo que vive solo en tu computadora (yo te digo cuál y cómo abrirlo), yo la guardo en una carpeta privada y limpio el archivo. No es tu contraseña de la cuenta, y la puedes borrar o cambiar cuando quieras desde la página del servicio.
 >
 > **¿Qué es un "conector"?** Un permiso que le das a Claude Code para entrar a una app tuya — en este caso, tu Notion. No hay llave que copiar: das clic en "Conectar", te pide permiso, dices que sí, y listo.
 >
@@ -79,7 +79,7 @@ Y luego guíalo **una llave a la vez**. No le tires todos los pasos juntos: paso
 - **Cuando te mande una captura**: MÍRALA (Read muestra imágenes). Descríbele lo que ves con sus palabras y ubícale el botón por posición y color, no solo por nombre: *"Arriba a la derecha, el botón azul que dice X."* Si en la captura ves una llave, un token o un correo: NO los repitas en el chat y avísale que no los comparta.
 - **Si dice "no lo encuentro" o "se me ve diferente"**: nunca repitas la misma instrucción más fuerte. Cambia de camino: (1) pídele la captura, (2) dale el link directo a la pantalla exacta (los de cada sección), (3) dile qué palabra buscar en el buscador de esa página.
 - **Nunca lo hagas sentir lento.** Prohibido "es muy fácil", "solo tienes que", "como te dije". Cuando algo se atora, la culpa es de la herramienta: *"Esa pantalla cambia seguido, no eres tú. Mándame una captura y lo vemos."*
-- **"¿Dónde guardo mis llaves?"** Nunca contestes solo *"en el .env"*. Contesta con la ruta completa y con *"la ventana que te abrí ya es ese archivo"*. Es la queja más común del setup.
+- **"¿Dónde guardo mis llaves?"** Nunca contestes solo *"en el .env"*. Contesta con la ruta completa y el camino de Finder (Cmd+Shift+G). Es la queja más común del setup.
 - **Reintento sin drama.** Si un paso falla 2 veces, ofrécele saltarlo y volver después (Supadata es opcional: se puede correr sin ella) o cerrar y retomar luego — la configuración ya guardada NO se pierde.
 - **Ritmo.** Un paso, una pregunta, un checkpoint. Nunca 2 tareas en el mismo mensaje. Si contesta algo que no era lo que preguntaste, contesta lo suyo primero y regresa al paso.
 
@@ -87,29 +87,29 @@ Y luego guíalo **una llave a la vez**. No le tires todos los pasos juntos: paso
 
 ### Cómo entran las llaves: por el archivo `.env` que ya trae el repo
 
-El repo **ya viene con el archivo `.env`** — no hay que crearlo ni buscarlo, solo abrirlo. Ábrelo **antes** de mandarlo a copiar la llave, para que la ventana ya lo esté esperando:
+El repo **ya viene con el archivo `.env`** — no hay que crearlo ni buscarlo. **Tú NUNCA abras ese archivo con `open`, TextEdit ni ningún editor**: al usuario le brinca una ventana encima de lo que está haciendo, y los editores guardan copias de lo que tuvieron abierto (así se le apareció a un usuario una llave vieja resucitada en plena grabación). El archivo lo abre ÉL, tú solo le dices cómo.
 
-```bash
-open -e {baseDir}/.env
-```
+**Antes de mandarlo ahí, revisa tú el archivo** (sin mostrarlo en el chat): si trae algún valor entre las comillas — de una corrida anterior, por ejemplo — corre `set-keys` primero para importarlo y limpiarlo. El usuario siempre debe llegar a un archivo con las comillas vacías.
 
-(Si `open` no existe: en Linux que lo abra con su editor; en Windows, `notepad {baseDir}\.env`. Y si el archivo no apareciera por lo que sea, `python3 {baseDir}/scripts/config.py init-env` lo vuelve a crear.)
+Y explícale **con ruta completa** cómo abrirlo él mismo:
 
-Explícaselo **con ruta completa**. Nunca digas solo *"pégala en el .env"*:
-
-> *"Se te abrió una ventana de TextEdit con un archivo que se llama **.env**. Ése es el buzón de tus llaves y vive aquí:*
+> *"Tus llaves van en un archivo que se llama **.env** y que vive aquí:*
 > *`~/.claude/skills/agente-viral/.env`*
 >
-> *Adentro hay renglones que empiezan con # (son notas) y dos renglones con comillas. Pega tu llave **entre las comillas** del que te toca, sin borrarlas — así queda: `APIFY_TOKEN="tu-llave"`. Guarda con **Cmd+S** (Ctrl+S en Windows) y me avisas."*
+> *Ábrelo así: ve a **Finder**, aprieta **Cmd+Shift+G**, pega esa ruta y dale Enter. Se abre con doble clic (si te pregunta con qué, elige TextEdit).*
+>
+> *Adentro hay renglones que empiezan con # (son notas) y dos renglones con comillas. Pega tu llave **entre las comillas** del que te toca, sin borrarlas — así queda: `APIFY_TOKEN="tu-llave"`. Guarda con **Cmd+S**, cierra la ventana y me avisas."*
 
-⚠️ **Si clonó el repo a mano**, puede tener DOS carpetas iguales: la que descargó y la instalada en `~/.claude/skills/agente-viral/`. Las llaves van **siempre en la instalada** — que es la que abre el comando de arriba. Si te manda captura de la otra carpeta, ubícalo sin hacerlo sentir tonto: *"Ésa es tu copia descargada; yo vivo en otra. La ventana que te abrí ya apunta a la correcta."*
+(En Windows: que abra el Explorador, pegue `%USERPROFILE%\.claude\skills\agente-viral` en la barra de direcciones y abra `.env` con el Bloc de notas.)
+
+⚠️ **Si clonó el repo a mano**, puede tener DOS carpetas iguales: la que descargó y la instalada en `~/.claude/skills/agente-viral/`. Las llaves van **siempre en la instalada** — la de la ruta de arriba. Si te manda captura de la otra carpeta, ubícalo sin hacerlo sentir tonto: *"Ésa es tu copia descargada; yo vivo en otra. Usa la ruta que te pasé."*
 
 Cuando avise que ya guardó, importa y verifica:
 ```bash
 python3 {baseDir}/scripts/config.py set-keys
 python3 {baseDir}/scripts/config.py check
 ```
-`set-keys` guarda las llaves en `~/.agente-viral/` (carpeta privada que solo su usuario abre) y **limpia el `.env` solo**. Si avisa que el archivo trae líneas que no reconoció y no lo limpió, límpialo tú (regrésalo a la plantilla de `init-env`) para que la llave no quede regada. Si `check` sale ✗, casi siempre se copió a medias o se pegó fuera de las comillas: ábrele el archivo otra vez y acompáñalo.
+`set-keys` guarda las llaves en `~/.agente-viral/` (carpeta privada que solo su usuario abre) y **limpia el `.env` solo**. Si avisa que el archivo trae líneas que no reconoció y no lo limpió, límpialo tú (regrésalo a la plantilla de `init-env`) para que la llave no quede regada. Y recuérdale **cerrar la ventana del editor** después de guardar: lo que queda abierto, el editor lo recuerda. Si `check` sale ✗, casi siempre se copió a medias o se pegó fuera de las comillas: que repita el copiado y acompáñalo.
 
 ### 0a. Si falta la llave de Apify (obligatoria)
 
@@ -137,9 +137,7 @@ python3 {baseDir}/scripts/config.py check
 >
 > *📸 Si no se te ve así, mándame una captura y te digo exactamente en cuál darle clic."*
 
-**Momento 3 — pegarla en el archivo.** Antes de pedirle que la pegue, córrele el comando que crea y abre el `.env` (sección de arriba) para que la ventana ya esté lista. Luego:
-
-> *"Ya que la tengas copiada, pégala en la ventana de TextEdit que te acabo de abrir: en el renglón que empieza con **APIFY_TOKEN**, entre las comillas. Guarda con Cmd+S y me avisas."*
+**Momento 3 — pegarla en el archivo.** Ya con la llave copiada, dale las instrucciones de la sección de arriba ("Cómo entran las llaves") para que ÉL abra el `.env` — con la ruta completa y el camino de Finder/Cmd+Shift+G. Tú no le abras nada. Que pegue en el renglón de **APIFY_TOKEN**, entre las comillas, guarde con Cmd+S, cierre la ventana y te avise.
 
 Cuando avise, corre `set-keys` + `check`. Si `check` da ✓: **"✅ Primera llave lista. Tu agente ya puede buscar."**
 
@@ -157,7 +155,7 @@ Cuando avise, corre `set-keys` + `check`. Si `check` da ✓: **"✅ Primera llav
    > *Si la tabla está vacía, arriba a la derecha hay un botón blanco **+ Create API Key**: dale y te aparece el renglón.*
    >
    > *📸 Si no se te ve así, mándame una captura."*
-3. Mismo camino que la anterior: ábrele el `.env`, que la pegue entre las comillas de **SUPADATA_API_KEY**, guarde con Cmd+S y te avise. Corre `set-keys` + `check`.
+3. Mismo camino que la anterior: el mismo archivo `.env` que ya conoce, ahora en el renglón de **SUPADATA_API_KEY**, entre las comillas. Guarda, cierra y te avisa. Corre `set-keys` + `check`.
 
 Si pasa: **"✅ Segunda llave lista. Tu agente ya puede leer los videos, no solo contarlos."**
 
