@@ -47,34 +47,34 @@ Aunque diga `sí`: si en `show` ves `supadata_api_key: (falta)`, ofrécesela una
 
 Si falta algo del setup, pídele las llaves **directo y sin rodeos**. Nada de tours guiados pantalla por pantalla: el usuario ya sabe (o alguien le está enseñando) de dónde salen. Tu trabajo es decirle QUÉ necesitas, DÓNDE lo pega, y estar listo para ayudar si se atora.
 
-### Pedir las llaves (un solo mensaje, corto)
+### Pedir las llaves (un mensaje corto y ya)
 
-Dile algo así — ajusta el tono, no lo recites:
+Dos links y dónde se pegan. Nada más. Sin explicar qué es una llave, sin contar cómo se crea una cuenta, sin describir pantallas:
 
-> *"Para trabajar necesito 2 llaves. Las dos cuentas son gratis:*
+> *"Necesito 2 llaves para trabajar. Las dos cuentas son gratis:*
 >
-> | Llave | De dónde sale | |
-> |---|---|---|
-> | **Apify** (obligatoria — corre los robots de búsqueda) | https://console.apify.com/settings/integrations — ahí se llama "Personal API token" | |
-> | **Supadata** (recomendada — lee lo que se dice en los videos) | https://dash.supadata.ai/api-keys | |
+> *• **Apify** (obligatoria, corre los robots de búsqueda) → https://console.apify.com/settings/integrations*
+> *• **Supadata** (recomendada, lee lo que se dice en los videos) → https://dash.supadata.ai/api-keys*
 >
-> *Pégalas en el archivo **.env** que vive aquí: `~/.claude/skills/agente-viral/.env` — ábrelo con Finder (Cmd+Shift+G, pegas la ruta, Enter). Cada llave va entre las comillas de su renglón. Guardas con Cmd+S, cierras la ventana y me avisas.*
+> *Pégalas en el archivo **.env** — lo abres aquí mismo, en el panel de **Archivos** de Claude Code: `.claude` → `skills` → `agente-viral` → `.env` (o escribe ".env" en el filtro de arriba). Cada llave va entre las comillas de su renglón. Guardas y me avisas.*
 >
-> *Nunca las pegues aquí en el chat. Y si te atoras en cualquier punto — no encuentras una llave, una pantalla no se parece, lo que sea — dime o mándame una captura y te guío."*
+> *Si te atoras en cualquier punto, dime o mándame una captura y te guío."*
 
-Reglas:
-- **No des el paso a paso de cada plataforma por adelantado.** Solo si el usuario pregunta o se atora: entonces sí, guíalo con capturas y clic por clic (datos de las pantallas, abajo).
-- Si no tiene cuenta en alguna, el mismo link se la pide al entrar — con Google es lo más rápido. Solo dilo si pregunta.
+Reglas de ese mensaje:
+- **Corto.** Dos links, la ruta del archivo, y el ofrecimiento de ayuda. Si te sale más largo que el ejemplo, sobra.
+- **Cero tutorial por adelantado.** Nada de cómo crear la cuenta, cuál botón copia, ni qué es un "Personal API token". Eso solo sale si el usuario pregunta o se atora.
+- Si no tiene cuenta en alguna, el mismo link se la pide al entrar. Solo dilo si pregunta.
 - Supadata es opcional: si dice que no la quiere, funcionas igual pero filtras peor. Respétalo y sigue.
 - **Antes de mandarlo al archivo, revisa tú que el `.env` esté limpio** (sin valores entre comillas). Si trae algo de antes, corre `set-keys` para importarlo y barrerlo.
-- **Tú NUNCA abras el archivo con `open`, TextEdit ni ningún editor** — el archivo lo abre él. Los editores recuerdan lo que tuvieron abierto y las ventanas saltando encima estorban.
+- **Tú NUNCA abras el archivo con `open`, TextEdit ni ningún editor.** Lo abre él, desde el panel de Archivos de Claude Code — ahí se edita como en cualquier editor, sin salir de la app. Nada de ventanas brincando encima: TextEdit además recuerda lo que tuvo abierto y puede resucitar llaves viejas.
+- Si su panel de Archivos no muestra la carpeta `.claude` (depende de dónde abrió Claude Code), ahí sí dale la ruta para Finder: **Cmd+Shift+G** y pega `~/.claude/skills/agente-viral/.env`.
 
 Cuando avise que ya pegó y guardó:
 ```bash
 python3 {baseDir}/scripts/config.py set-keys
 python3 {baseDir}/scripts/config.py check
 ```
-`set-keys` guarda las llaves en `~/.agente-viral/` (carpeta privada) y **limpia el `.env` solo**; recuérdale cerrar la ventana del editor. Si `check` da ✓: **"✅ Llaves listas. Ya puedo buscar."** Si da ✗, casi siempre se copió a medias o quedó fuera de las comillas: que repita el copiado, y si falla dos veces, pídele captura (tapando la llave).
+`set-keys` guarda las llaves en `~/.agente-viral/` (carpeta privada) y **limpia el `.env` solo**. Si `check` da ✓: **"✅ Llaves listas. Ya puedo buscar."** Si da ✗, casi siempre se copió a medias o quedó fuera de las comillas: que repita el copiado, y si falla dos veces, pídele captura (tapando la llave).
 
 Si el usuario de todos modos pega una llave en el chat, no lo regañes: guárdala al vuelo con `APIFY_TOKEN="<llave>" python3 {baseDir}/scripts/config.py set-keys` (variable de entorno, nunca argumento suelto), no la repitas de vuelta, y dile que cuando pueda genere una nueva — la pegada queda en el historial.
 
