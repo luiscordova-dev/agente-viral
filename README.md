@@ -9,7 +9,9 @@ Un agente de IA que trabaja en tu computadora. Le dices un nicho — cocina, fin
 5. **Detecta a las cuentas chicas que la rompieron**: videos con muchas más vistas que seguidores tiene su autor. Esos ganaron por el formato, no por la fama — y son los que tú sí puedes copiar.
 6. **Te deja 3 tablas en tu Notion**: los virales con sus números, ideas para tu negocio **con el guion completo adentro de cada una** —listo para leer a cámara—, y el análisis de qué está funcionando.
 
-Necesitas Claude Code ya instalado — el mapa que te trajo aquí lo deja listo. ¿Llegaste directo a esta página sin pasar por el mapa? Instala Claude Code primero: [claude.com/claude-code](https://claude.com/claude-code).
+**Es para** creadores y dueños de negocio que quieren saber qué contenido está funcionando en su nicho y sacar ideas para el suyo.
+
+Necesitas [Claude Code](https://claude.com/claude-code) instalado.
 
 ## Instálalo (pídeselo a Claude)
 
@@ -54,6 +56,8 @@ El agente te guía para sacar cada llave cuando lo saludes. Las tres cuentas son
 
 También necesitas **Python 3** — ya viene en macOS y Linux. Si tu Mac te ofrece instalarlo la primera vez, acepta y espera.
 
+> El `.env` que ves en el repo es a propósito: es la plantilla vacía donde pegas tus llaves. No trae ninguna llave.
+
 ## Cómo se ve una corrida
 
 **Tú escribes:**
@@ -93,6 +97,17 @@ Este repo es un agente completo, y puedes señalar cada parte:
 
 Fíjate en la diferencia: el archivo [pipeline.py](scripts/pipeline.py) es la parte de receta (siempre hace lo mismo). Las decisiones — qué video es basura, qué hook funciona, qué idea te sirve — las toma la IA en cada corrida. Esa mezcla es un agente.
 
+## Cómo está armado
+
+| Pieza | Qué hace |
+|---|---|
+| [`SKILL.md`](SKILL.md) | El manual del agente: onboarding, clasificación, ideas y escritura en Notion |
+| [`scripts/pipeline.py`](scripts/pipeline.py) | El motor: lanza las búsquedas en Apify (TikTok, YouTube, Instagram), descarta lo que no es contenido, puntúa cada video contra su propia plataforma, pide a Supadata lo que se dice y baja las portadas de los finalistas |
+| [`scripts/config.py`](scripts/config.py) | Llaves y ajustes: las valida, las guarda en `~/.agente-viral/config.json` y limpia el `.env` |
+| [`reference/`](reference/) | Los planos de las tablas de Notion y la guía de lectura |
+
+Python solo con la librería estándar (nada que instalar con `pip`). Notion se llena desde Claude Code con su conector, sin llave.
+
 ## Adáptalo a otra cosa (cambia 2 archivos)
 
 El sistema que acabas de armar — *buscar afuera → filtrar → analizar → escribir en Notion* — sirve para mucho más que videos:
@@ -125,7 +140,7 @@ Armaste tu primer agente y ya trabaja para ti. Corre en tu computadora: trabaja 
 
 El que atiende a tus clientes trabaja aunque tú no estés. Responde dudas, capta clientes, agenda citas y manda links de cobro — en tu WhatsApp y en tus redes. Para tu negocio, o para vendérselo a tus clientes.
 
-**Ese lo construimos juntos, en vivo → [Próximos workshops](https://lu.ma/luiscordova)**
+**Ese lo construimos juntos, en vivo → [Próximos workshops](https://luma.com/luiscordova)**
 
 ---
 
